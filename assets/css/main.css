@@ -1118,8 +1118,10 @@ input, select, textarea {
 		width: 100%;
 		height: 100vh;
 		z-index: 1;
-		filter: blur(40px);
-		-webkit-filter: blur(10px);
+		-moz-filter: blur(0.3rem);
+		-webkit-filter: blur(0.3rem);
+		-ms-filter: blur(0.3rem);
+		filter: blur(0.3rem);
 	}
 
 		#bg:before, #bg:after {
@@ -1172,10 +1174,10 @@ input, select, textarea {
 			-webkit-transform: scale(1.0825);
 			-ms-transform: scale(1.0825);
 			transform: scale(1.0825);
-			-moz-filter: blur(0.2rem);
-			-webkit-filter: blur(0.2rem);
-			-ms-filter: blur(0.2rem);
-			filter: blur(0.2rem);
+			-moz-filter: blur(0.8rem);
+			-webkit-filter: blur(0.8rem);
+			-ms-filter: blur(0.8rem);
+			filter: blur(0.8rem);
 		}
 
 		body.is-preload #bg:before {
@@ -1398,18 +1400,18 @@ input, select, textarea {
 			-webkit-transform: scale(0.95);
 			-ms-transform: scale(0.95);
 			transform: scale(0.95);
-			-moz-filter: blur(0.1rem);
-			-webkit-filter: blur(0.1rem);
-			-ms-filter: blur(0.1rem);
-			filter: blur(0.1rem);
+			-moz-filter: blur(0.6rem);
+			-webkit-filter: blur(0.6rem);
+			-ms-filter: blur(0.6rem);
+			filter: blur(0.6rem);
 			opacity: 0;
 		}
 
 		body.is-preload #header {
-			-moz-filter: blur(0.125rem);
-			-webkit-filter: blur(0.125rem);
-			-ms-filter: blur(0.125rem);
-			filter: blur(0.125rem);
+			-moz-filter: blur(0.45rem);
+			-webkit-filter: blur(0.45rem);
+			-ms-filter: blur(0.45rem);
+			filter: blur(0.45rem);
 		}
 
 			body.is-preload #header > * {
@@ -1651,10 +1653,10 @@ input, select, textarea {
 			-webkit-transform: scale(0.95);
 			-ms-transform: scale(0.95);
 			transform: scale(0.95);
-			-moz-filter: blur(0.1rem);
-			-webkit-filter: blur(0.1rem);
-			-ms-filter: blur(0.1rem);
-			filter: blur(0.1rem);
+			-moz-filter: blur(0.5rem);
+			-webkit-filter: blur(0.5rem);
+			-ms-filter: blur(0.5rem);
+			filter: blur(0.5rem);
 			opacity: 0;
 		}
 
