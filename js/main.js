@@ -87,23 +87,16 @@ function init() {
     animate();
     fitToScreen();
 }
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
 
 function fitToScreen() {
-    
-    var minBounds = new THREE.Vector3(-10, -8.5, -8);
-    var maxBounds = new THREE.Vector3(10, 8.5, 2);
-    
-    // Create a bounding box with the manually determined bounds
-    var boundingBox = new THREE.Box3(minBounds, maxBounds);
-    var size = boundingBox.getSize(new THREE.Vector3());
-    var maxDim = Math.max(size.x, size.y, size.z);
-    var center = boundingBox.getCenter(new THREE.Vector3());
-    
-    var factor = 1.2;
-    var cameraZ = maxDim / (2 * Math.tan((camera.fov / 2) * (Math.PI / 180)));
 
-    camera.fov = cameraZ / camera.position.z * camera.fov * factor;
-    console.log(camera.fov);
+    camera.fov = isMobile() ? 120 : 75;
+    camera.updateProjectionMatrix();
+
+
 }
 
 
