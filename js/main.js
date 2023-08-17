@@ -81,7 +81,7 @@ function onWindowResize() {
     outlineEffect.setSize( window.innerWidth, window.innerHeight );
 
 }
-var text = [{pos: new THREE.Vector3(-3,1.2,0), text: "Page 1"},{pos:new THREE.Vector3(7.5,2,0), text: "Page 2"},{pos: new THREE.Vector3(-1.7,-6.5,0), text: "Page 3"},{pos:new THREE.Vector3(12,-6.3,0),text: "Page 4"},]
+var text = [{pos: new THREE.Vector3(-3,1.2,0), text: "Home"},{pos:new THREE.Vector3(7.5,2,0), text: "About"},{pos: new THREE.Vector3(-1.7,-6.5,0), text: "Experience"},{pos:new THREE.Vector3(12,-6.3,0),text: "Contact"},]
 // Load a model with given path and position
 function loadModel(loader, path, position, textIndex) {
     loader.load(path, function (gltf) {
