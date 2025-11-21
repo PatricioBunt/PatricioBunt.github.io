@@ -1,237 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patricio Bunt</title>
-    <meta charset="utf-8"><meta name="theme-color" content="#000000"/>
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <style>
-        body { margin: 0; overflow: hidden;
-        background-color: black; }
-        
-        #contact-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px 20px;
-            /* From https://css.glass */
-            background: rgba(255, 255, 255, 0);
-            transition: all 0.3s ease;
-        }
-        #contact-container:hover {
-            
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5.6px);
-            -webkit-backdrop-filter: blur(5.6px);
-            border-radius: 3px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-        }
-        #contact {
-
-            color: rgba(255, 255, 255, 0);
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-size: 18px;
-            font-weight: 200;
-            letter-spacing: 6px;
-            text-transform: lowercase;
-            pointer-events: none;
-            mix-blend-mode: difference;
-            text-align: center;
-            white-space: nowrap;
-        }
-        #contact-bottom {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: rgba(255, 255, 255, 0.8);
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-size: 18px;
-            font-weight: 200;
-            letter-spacing: 6px;
-            text-transform: lowercase;
-            pointer-events: none;
-            mix-blend-mode: difference;
-            text-align: center;
-            white-space: nowrap;
-        }
-        #checkmark {
-            position: absolute;
-            top: 50%;
-            right: -30px;
-            transform: translateY(-75%);
-            opacity: 0;
-            mix-blend-mode: difference;
-            transition: opacity 0.3s ease;
-        }
-        #checkmark::before {
-            content: '';
-            display: block;
-            width: 8px;
-            mix-blend-mode: difference;
-            height: 16px;
-            border: solid rgba(255, 255, 255, 0.8);
-            border-width: 0 1px 1px 0;
-            transform: rotate(45deg);
-        }
-    </style>
+    <meta name="description" content="A comprehensive collection of developer tools and utilities">
+    <meta name="theme-color" content="#007acc">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div id="contact-container">
-        <div id="contact">hello@patriciobunt.com</div>
-        <span id="checkmark"></span>
-    </div>
-    <div id="contact-bottom">hello@patriciobunt.com</div>
-
-    <script>
-        const container = document.getElementById('contact-container');
-        const email = document.getElementById('contact').textContent;
-        const checkmark = document.getElementById('checkmark');
-
-        container.addEventListener('click', () => {
-            navigator.clipboard.writeText(email).then(() => {
-                checkmark.style.opacity = '1';
-                setTimeout(() => {
-                    checkmark.style.opacity = '0';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-            });
-        });
-    </script>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-        }
-    }
-    </script>
-
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
-        import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
-        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-
-        let camera, scene, renderer, composer;
-        let particleSystem;
-        let rectLight;
-        let controls;
-        let rectLight2;
+    <div class="app-container">
+        <!-- Header Row -->
+        <header class="app-header">
+            <div class="app-menu">
+                <div class="menu-item" id="settings-menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                    <div class="dropdown-menu" id="settings-dropdown">
+                        <div class="dropdown-item" data-action="theme">
+                            <span>Theme</span>
+                            <i class="fas fa-chevron-right"></i>
+                            <div class="dropdown-submenu" id="theme-submenu">
+                                <div class="dropdown-item" data-theme="dark">Dark</div>
+                                <div class="dropdown-item" data-theme="light">Light</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-item" data-action="accent-color">
+                            <span>Accent Color</span>
+                            <input type="color" id="accent-color-inline" value="#007acc" class="color-picker-inline">
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" data-action="default-landing">
+                            <span>Default Landing Page</span>
+                            <i class="fas fa-chevron-right"></i>
+                            <div class="dropdown-submenu" id="landing-submenu">
+                                <div class="dropdown-item" data-landing="welcome">Welcome Screen</div>
+                                <!-- Favorites will be dynamically added here -->
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" data-action="clear-favorites">
+                            <span>Clear All Favorites</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" data-action="toggle-upcoming">
+                            <span id="toggle-upcoming-label">Show Upcoming Tools</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item" data-action="reset-settings">
+                            <span>Reset All Settings</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div style="padding: 8px 16px; font-size: 13px; color: var(--text-secondary);">
+                            Contact: <a href="mailto:hello@patriciobunt.com" style="color: var(--accent-color); text-decoration: none;">hello@patriciobunt.com</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
         
-        let effectSobel;
+        <!-- Content Row: Nav and Main Content -->
+        <div class="content-row">
+            <!-- Left Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>
+                <div class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+                <nav class="sidebar-nav">
+                <!-- Favorites -->
+                <div class="nav-category" id="favorites-category" style="display: none;">
+                    <div class="category-header" data-category="favorites">
+                        <i class="fas fa-chevron-right category-icon"></i>
+                        <i class="fas fa-star"></i>
+                        <span>Favorites</span>
+                    </div>
+                    <div class="category-items" data-items="favorites" id="favorites-list">
+                        <!-- Favorites will be dynamically added here -->
+                    </div>
+                </div>
+                <!-- Text & Data -->
+                <div class="nav-category">
+                    <div class="category-header" data-category="text-data">
+                        <i class="fas fa-chevron-right category-icon"></i>
+                        <i class="fas fa-file-alt"></i>
+                        <span>Text & Data</span>
+                    </div>
+                    <div class="category-items" data-items="text-data">
+                        <a href="#/tools/diff-checker" class="nav-item" data-tool="diff-checker">
+                            <i class="fas fa-exchange-alt"></i> Diff Checker
+                        </a>
+                        <a href="#/tools/character-counter" class="nav-item" data-tool="character-counter">
+                            <i class="fas fa-font"></i> Character/Word Counter
+                        </a>
+                        <a href="#/tools/character-frequency" class="nav-item" data-tool="character-frequency">
+                            <i class="fas fa-chart-pie"></i> Character Frequency
+                        </a>
+                        <a href="#/tools/levenshtein" class="nav-item" data-tool="levenshtein">
+                            <i class="fas fa-ruler-combined"></i> Levenshtein Distance
+                        </a>
+                        <a href="#/tools/duplicate-remover" class="nav-item" data-tool="duplicate-remover">
+                            <i class="fas fa-eraser"></i> Duplicate Line Remover
+                        </a>
+                    </div>
+                </div>
 
-const params = {
-    enable: true
-};
+                <!-- Encoding & Hashing -->
+                <div class="nav-category">
+                    <div class="category-header" data-category="encoding">
+                        <i class="fas fa-chevron-right category-icon"></i>
+                        <i class="fas fa-lock"></i>
+                        <span>Encoding & Hashing</span>
+                    </div>
+                    <div class="category-items" data-items="encoding">
+                        <a href="#/tools/base64" class="nav-item" data-tool="base64">
+                            <i class="fas fa-key"></i> Base64 Encoder/Decoder
+                        </a>
+                        <a href="#/tools/hash-generator" class="nav-item" data-tool="hash-generator" data-coming-soon="true">
+                            <i class="fas fa-fingerprint"></i> Hash Generator
+                            <i class="fas fa-clock coming-soon-icon" title="Coming soon"></i>
+                        </a>
+                        <a href="#/tools/url-encoder" class="nav-item" data-tool="url-encoder">
+                            <i class="fas fa-link"></i> URL Encoder/Decoder
+                        </a>
+                        <a href="#/tools/jwt-decoder" class="nav-item" data-tool="jwt-decoder">
+                            <i class="fas fa-shield-alt"></i> JWT Decoder
+                        </a>
+                    </div>
+                </div>
 
-        init();
-        animate();
+                <!-- Development -->
+                <div class="nav-category">
+                    <div class="category-header" data-category="development">
+                        <i class="fas fa-chevron-right category-icon"></i>
+                        <i class="fas fa-laptop-code"></i>
+                        <span>Development</span>
+                    </div>
+                    <div class="category-items" data-items="development">
+                        <a href="#/tools/json-formatter" class="nav-item" data-tool="json-formatter">
+                            <i class="fas fa-code"></i> JSON Formatter
+                        </a>
+                        <a href="#/tools/regex-tester" class="nav-item" data-tool="regex-tester">
+                            <i class="fas fa-search"></i> Regex Tester
+                        </a>
+                        <a href="#/tools/html-minifier" class="nav-item" data-tool="html-minifier" data-coming-soon="true">
+                            <i class="fab fa-html5"></i> HTML Minifier/Beautifier
+                            <i class="fas fa-clock coming-soon-icon" title="Coming soon"></i>
+                        </a>
+                        <a href="#/tools/css-minifier" class="nav-item" data-tool="css-minifier" data-coming-soon="true">
+                            <i class="fab fa-css3-alt"></i> CSS Minifier/Beautifier
+                            <i class="fas fa-clock coming-soon-icon" title="Coming soon"></i>
+                        </a>
+                        <a href="#/tools/js-minifier" class="nav-item" data-tool="js-minifier" data-coming-soon="true">
+                            <i class="fab fa-js"></i> JS Minifier/Beautifier
+                            <i class="fas fa-clock coming-soon-icon" title="Coming soon"></i>
+                        </a>
+                        <a href="#/tools/cron-builder" class="nav-item" data-tool="cron-builder">
+                            <i class="fas fa-clock"></i> Cron Expression Builder
+                        </a>
+                        <a href="#/tools/uuid-generator" class="nav-item" data-tool="uuid-generator">
+                            <i class="fas fa-id-card"></i> UUID Generator
+                        </a>
+                    </div>
+                </div>
 
-        function init() {
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-            camera.position.set(0, 5, -15);
-
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x000104);
-            scene.fog = new THREE.FogExp2(0x000104, 0.0025);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            controls = new OrbitControls(camera, renderer.domElement);
-            controls.target.set(0, 0, 0);
-            controls.update();
-
-            RectAreaLightUniformsLib.init();
-            rectLight = new THREE.RectAreaLight(0xffffff, 5, 4, 10);
-            rectLight.position.set(-5, 5, 5);
-            rectLight.lookAt(0, 0, 0);
-            scene.add(rectLight);
-            scene.add(new RectAreaLightHelper(rectLight));
-
-            rectLight2 = new THREE.RectAreaLight(0xffffff, 5, 4, 10);
-            rectLight2.position.set(-5, -5, 5);
-            rectLight2.lookAt(0, 0, 0);
-            scene.add(rectLight2);
-            scene.add(new RectAreaLightHelper(rectLight2));
-
-            const geoFloor = new THREE.PlaneGeometry(2000, 2000);
-            const matStdFloor = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0 });
-            const mshStdFloor = new THREE.Mesh(geoFloor, matStdFloor);
-            mshStdFloor.rotation.x = -Math.PI / 2;
-            mshStdFloor.position.y = -10;
-            scene.add(mshStdFloor);
-
-            const loader = new GLTFLoader();
-            loader.load('./LeePerrySmith/LeePerrySmith.glb', function(gltf) {
-                const mesh = gltf.scene.children[0];
-                
-                const material = new THREE.MeshStandardMaterial({
-                    color: 0x333333,
-                    roughness: 0,
-                    metalness: 1
-                });
-                
-                mesh.material = material;
-                mesh.position.set(0, 0, 0); 
-                mesh.rotation.set(0,Math.PI,0)
-                scene.add(mesh);
-            });
-
-
-            // Post-processing
-            composer = new EffectComposer(renderer);
-            const renderPass = new RenderPass(scene, camera);
-            composer.addPass(renderPass);
+                <!-- Converters -->
+                <div class="nav-category">
+                    <div class="category-header" data-category="converters">
+                        <i class="fas fa-chevron-right category-icon"></i>
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Converters</span>
+                    </div>
+                    <div class="category-items" data-items="converters">
+                        <a href="#/tools/timestamp-converter" class="nav-item" data-tool="timestamp-converter">
+                            <i class="fas fa-calendar-alt"></i> Unix Timestamp Converter
+                        </a>
+                        <a href="#/tools/case-converter" class="nav-item" data-tool="case-converter">
+                            <i class="fas fa-text-height"></i> Case Converter
+                        </a>
+                        <a href="#/tools/csv-to-json" class="nav-item" data-tool="csv-to-json">
+                            <i class="fas fa-table"></i> CSV to JSON
+                        </a>
+                        <a href="#/tools/image-to-datauri" class="nav-item" data-tool="image-to-datauri">
+                            <i class="fas fa-image"></i> Image to Data URI
+                        </a>
+                    </div>
+                </div>
 
 
+                <!-- Utilities -->
+                <div class="nav-category">
+                    <div class="category-header" data-category="utilities">
+                        <i class="fas fa-chevron-right category-icon"></i>
+                        <i class="fas fa-tools"></i>
+                        <span>Utilities</span>
+                    </div>
+                    <div class="category-items" data-items="utilities">
+                        <a href="#/tools/color-picker" class="nav-item" data-tool="color-picker">
+                            <i class="fas fa-palette"></i> Color Picker
+                        </a>
+                        <a href="#/tools/lorem-ipsum" class="nav-item" data-tool="lorem-ipsum">
+                            <i class="fas fa-paragraph"></i> Lorem Ipsum Generator
+                        </a>
+                        <a href="#/tools/password-generator" class="nav-item" data-tool="password-generator">
+                            <i class="fas fa-key"></i> Password Generator
+                        </a>
+                        <a href="#/tools/pomodoro" class="nav-item" data-tool="pomodoro">
+                            <i class="fas fa-hourglass-half"></i> Pomodoro Timer
+                        </a>
+                        <a href="#/tools/keyboard-tester" class="nav-item" data-tool="keyboard-tester">
+                            <i class="fas fa-keyboard"></i> Keyboard Tester
+                        </a>
+                    </div>
+                </div>
 
-            const bloomPass = new UnrealBloomPass(
-                new THREE.Vector2(window.innerWidth, window.innerHeight),
-                1, 0.4, 0
-            );
-            composer.addPass(bloomPass);
+                <!-- Personal -->
+                <div class="nav-category">
+                    <div class="category-header" data-category="personal">
+                        <i class="fas fa-chevron-right category-icon"></i>
+                        <i class="fas fa-user"></i>
+                        <span>Personal</span>
+                    </div>
+                    <div class="category-items" data-items="personal">
+                        <a href="#/tools/task-list" class="nav-item" data-tool="task-list">
+                            <i class="fas fa-tasks"></i> Task List
+                        </a>
+                        <a href="#/tools/notepad" class="nav-item" data-tool="notepad">
+                            <i class="fas fa-sticky-note"></i> Notepad
+                        </a>
+                        <a href="#/tools/kanban-board" class="nav-item" data-tool="kanban-board">
+                            <i class="fas fa-columns"></i> Kanban Board
+                        </a>
+                    </div>
+                </div>
+
+                <!-- System -->
+                <div class="nav-category">
+                    <div class="category-header" data-category="system">
+                        <i class="fas fa-chevron-right category-icon"></i>
+                        <i class="fas fa-info-circle"></i>
+                        <span>System</span>
+                    </div>
+                    <div class="category-items" data-items="system">
+                        <a href="#/tools/device-info" class="nav-item" data-tool="device-info">
+                            <i class="fas fa-desktop"></i> Device & IP Info
+                        </a>
+                        <a href="#/tools/storage-viewer" class="nav-item" data-tool="storage-viewer">
+                            <i class="fas fa-database"></i> Storage Viewer
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Games -->
+                <div class="nav-category">
+                    <div class="category-header" data-category="games">
+                        <i class="fas fa-chevron-right category-icon"></i>
+                        <i class="fas fa-gamepad"></i>
+                        <span>Games</span>
+                    </div>
+                    <div class="category-items" data-items="games">
+                        <a href="#/tools/wordle" class="nav-item" data-tool="wordle">
+                            <i class="fas fa-spell-check"></i> Wordle
+                        </a>
+                        <a href="#/tools/typing-test" class="nav-item" data-tool="typing-test">
+                            <i class="fas fa-keyboard"></i> Typing Test
+                        </a>
+                        <a href="#/tools/reaction-test" class="nav-item" data-tool="reaction-test">
+                            <i class="fas fa-stopwatch"></i> Reaction Time Test
+                        </a>
+                    </div>
+                </div>
+                </nav>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <div class="content-header">
+                    <h2 id="tool-title">Select a tool</h2>
+                </div>
+                <div class="content-body" id="tool-content">
+                <div class="welcome-screen">
+                    <i class="fas fa-toolbox welcome-icon"></i>
+                    <h3>Select a tool from the sidebar to get started</h3>
+                    <div id="favorites-cards" class="favorites-cards">
+                        <!-- Favorite tools will appear as cards here -->
+                    </div>
+                </div>
+                </div>
+            </main>
+        </div>
+    </div>
 
 
-
-			// const effectGrayScale = new ShaderPass( LuminosityShader );
-			// composer.addPass( effectGrayScale );
-
-
-            window.addEventListener('resize', onWindowResize);
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            const time = Date.now() * 0.001;
-
-            rectLight.position.set(5*Math.sin(time),5,5*Math.cos(time));
-            rectLight.lookAt(0,0,0);    
-            rectLight2.position.set(-5*Math.sin(time),-5,-5*Math.cos(time));
-            rectLight2.lookAt(0,0,0);    
-
-            composer.render();
-        }
-    </script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
+
