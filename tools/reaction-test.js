@@ -251,6 +251,7 @@ export default {
             }
             
             state = 'waiting';
+            readyTime = null;
             const screen = document.getElementById('reaction-screen');
             const message = document.getElementById('reaction-message');
             const timeDisplay = document.getElementById('reaction-time');
@@ -265,6 +266,7 @@ export default {
             if (state === 'waiting') {
                 
                 state = 'ready';
+                readyTime = null;
                 const screen = document.getElementById('reaction-screen');
                 const message = document.getElementById('reaction-message');
                 
@@ -287,6 +289,17 @@ export default {
                 }, delay);
             } else if (state === 'ready') {
                 
+                if (readyTime === null) {
+                    clearTimeout(timeoutId);
+                    const screen = document.getElementById('reaction-screen');
+                    const message = document.getElementById('reaction-message');
+                    screen.className = 'reaction-screen click';
+                    message.textContent = 'Too early! Click to try again.';
+                    state = 'waiting';
+                    readyTime = null;
+                    return;
+                }
+                
                 clickTime = Date.now();
                 const reactionTime = clickTime - readyTime;
                 
@@ -297,6 +310,7 @@ export default {
                     screen.className = 'reaction-screen click';
                     message.textContent = 'Too early! Click to try again.';
                     state = 'waiting';
+                    readyTime = null;
                     return;
                 }
                 
@@ -316,14 +330,33 @@ export default {
                 timeDisplay.textContent = reactionTime + 'ms';
                 timeDisplay.style.display = 'block';
                 
-                state = 'waiting';
+                state = 'result';
+                readyTime = null;
+            } else if (state === 'result') {
+                clearTimeout(timeoutId);
+                state = 'ready';
+                readyTime = null;
+                const screen = document.getElementById('reaction-screen');
+                const message = document.getElementById('reaction-message');
+                const timeDisplay = document.getElementById('reaction-time');
                 
+                timeDisplay.style.display = 'none';
+                screen.className = 'reaction-screen waiting';
+                message.textContent = 'Wait for green...';
                 
-                setTimeout(() => {
-                    startNewTest();
-                }, 2000);
-            } else if (state === 'click') {
-                startNewTest();
+                const delay = Math.random() * 4000 + 1000;
+                
+                timeoutId = setTimeout(() => {
+                    readyTime = Date.now();
+                    
+                    screen.style.transition = 'none';
+                    screen.className = 'reaction-screen ready';
+                    message.textContent = 'CLICK NOW!';
+                    
+                    setTimeout(() => {
+                        screen.style.transition = '';
+                    }, 10);
+                }, delay);
             }
         }
         
