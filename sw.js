@@ -1,5 +1,5 @@
-const CACHE_NAME = 'dev-toolkit';
-const STATIC_CACHE = 'dev-toolkit-static';
+const CACHE_NAME = 'patricio-bunt-toolkit';
+const STATIC_CACHE = 'patricio-bunt-toolkit-static';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
