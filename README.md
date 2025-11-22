@@ -25,7 +25,7 @@ Live at [patriciobunt.com](https://patriciobunt.com)
 ### Encoding & Hashing
 
 - Base64 Encoder/Decoder
-- Hash Generator
+- Hash Generators
 - URL Encoder/Decoder
 - JWT Decoder
 
