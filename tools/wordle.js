@@ -424,7 +424,6 @@ export default {
             const result = checkGuess(guess);
             let allCorrect = true;
             
-            // Track best status for each letter (for keyboard updates)
             const letterStatuses = {};
             
             result.forEach((status, i) => {
@@ -434,7 +433,6 @@ export default {
                 cell.classList.remove('filled');
                 cell.classList.add(status);
                 
-                // Track best status for each letter (correct > present > absent)
                 const statusPriority = { 'correct': 3, 'present': 2, 'absent': 1 };
                 const currentPriority = letterStatuses[letter] ? statusPriority[letterStatuses[letter]] : 0;
                 const newPriority = statusPriority[status];
@@ -448,12 +446,10 @@ export default {
                 }
             });
             
-            // Update keyboard keys with best status for each letter
             Object.keys(letterStatuses).forEach(letter => {
                 const key = document.querySelector(`[data-key="${letter}"]`);
                 if (key) {
                     const status = letterStatuses[letter];
-                    // Don't downgrade if key is already correct
                     if (!key.classList.contains('correct') || status === 'correct') {
                         key.classList.remove('present', 'absent', 'correct');
                         key.classList.add(status);

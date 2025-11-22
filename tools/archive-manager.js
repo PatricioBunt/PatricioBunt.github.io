@@ -450,7 +450,6 @@ export default {
         let extractType = null;
         let compressionWorker = null;
 
-        // Load libraries
         window.setArchiveMode = (mode) => {
             currentMode = mode;
             const compressPanel = document.getElementById('compress-panel');
@@ -492,7 +491,6 @@ export default {
             }
         };
 
-        // Setup compress drop zone
         const compressDropZone = document.getElementById('compress-drop-zone');
         const compressInput = document.getElementById('compress-input');
 
@@ -527,7 +525,6 @@ export default {
             hideError('compress-error');
             hideWarning('compress-warning');
 
-            // Check file sizes
             const totalSize = files.reduce((sum, f) => sum + f.size, 0);
             if (totalSize > 100 * 1024 * 1024) {
                 showWarning('compress-warning', `Large file detected (${formatFileSize(totalSize)}). Compression may take a while.`);
@@ -614,7 +611,6 @@ export default {
             }
         };
 
-        // Setup extract drop zone
         const extractDropZone = document.getElementById('extract-drop-zone');
         const extractInput = document.getElementById('extract-input');
 
@@ -646,7 +642,6 @@ export default {
             hideError('extract-error');
             hideWarning('extract-warning');
 
-            // Detect file type
             const filename = file.name.toLowerCase();
             if (filename.endsWith('.gz') && !filename.endsWith('.tar.gz')) {
                 extractType = 'gzip';
@@ -665,7 +660,6 @@ export default {
                 showWarning('extract-warning', `Large file detected (${formatFileSize(file.size)}). Extraction may take a while.`);
             }
 
-            // Show file tree for archives
             if (extractType === 'zip' || extractType === 'tar' || extractType === 'targz') {
                 try {
                     await showArchiveTree(file, extractType);
@@ -835,7 +829,6 @@ export default {
             hideWarning('extract-warning');
         };
 
-        // Helper functions
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 B';
             const k = 1024;
@@ -887,7 +880,6 @@ export default {
             URL.revokeObjectURL(url);
         }
 
-        // Compression functions
         async function compressGzip(file, progressFill, progressText) {
             const level = parseInt(document.getElementById('compression-level').value) || 6;
             const arrayBuffer = await file.arrayBuffer();
@@ -941,7 +933,6 @@ export default {
                 const file = files[i];
                 updateProgress((i / total) * 90, `Adding ${file.name}...`);
                 const arrayBuffer = await file.arrayBuffer();
-                // Convert ArrayBuffer to Uint8Array
                 const uint8Array = new Uint8Array(arrayBuffer);
                 tar.add(file.name, uint8Array);
             }
@@ -959,10 +950,8 @@ export default {
         }
 
         async function compressTarGz(files, progressFill, progressText) {
-            // First create TAR
             const tarResult = await compressTar(files, progressFill, progressText);
             
-            // Then compress with GZIP
             updateProgress(95, 'Compressing TAR with GZIP...');
             const level = parseInt(document.getElementById('compression-level').value) || 6;
             const compressed = pako.gzip(tarResult.data, { level });
@@ -976,7 +965,6 @@ export default {
             };
         }
 
-        // Extraction functions
         async function extractGzip(file, progressFill, progressText) {
             updateProgress(50, 'Decompressing GZIP...');
             const arrayBuffer = await file.arrayBuffer();
@@ -1141,7 +1129,6 @@ export default {
             
             const tar = TarReader.read(arrayBuffer);
             
-            // Find entry by name (tar is an array, not an object with find method)
             let entry = null;
             for (let i = 0; i < tar.length; i++) {
                 const e = tar[i];
@@ -1165,24 +1152,12 @@ export default {
             };
         }
 
-        // Load required libraries
         async function loadLibraries() {
             if (window.pako && window.JSZip && window.tarjs) {
-                return; // Already loaded
+                return; 
             }
 
-            return Promise.all([
-                new Promise((resolve, reject) => {
-                    if (window.pako) {
-                        resolve();
-                        return;
-                    }
-                    const script = document.createElement('script');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js';
-                    script.onload = resolve;
-                    script.onerror = reject;
-                    document.head.appendChild(script);
-                }),
+            return Promise.all([ 
                 new Promise((resolve, reject) => {
                     if (window.JSZip) {
                         resolve();
@@ -1195,18 +1170,13 @@ export default {
                     document.head.appendChild(script);
                 }),
                 new Promise((resolve) => {
-                    // Implement browser-compatible TAR writer/reader
-                    // Since tar-js uses Node.js require, we'll implement our own simple TAR handler
-                    
                     if (!window.tarjs) {
-                        // Simple TAR Writer
                         class TarWriter {
                             constructor() {
                                 this.files = [];
                             }
                             
                             add(name, data) {
-                                // Ensure data is a Uint8Array
                                 const uint8Data = data instanceof Uint8Array ? data : new Uint8Array(data);
                                 this.files.push({ name, data: uint8Data });
                             }
@@ -1215,7 +1185,6 @@ export default {
                                 let tarData = new Uint8Array(0);
                                 
                                 for (const file of this.files) {
-                                    // Ensure we have a valid size
                                     const size = file.data ? file.data.length : 0;
                                     if (size === undefined || size === null) {
                                         throw new Error(`Invalid file data for ${file.name}`);
@@ -1230,7 +1199,6 @@ export default {
                                     tarData = combined;
                                 }
                                 
-                                // Add two empty blocks at the end
                                 const endBlocks = new Uint8Array(1024);
                                 const final = new Uint8Array(tarData.length + endBlocks.length);
                                 final.set(tarData, 0);
@@ -1243,32 +1211,26 @@ export default {
                                 const header = new Uint8Array(512);
                                 const nameBytes = new TextEncoder().encode(name);
                                 
-                                // Copy name (max 100 bytes)
                                 header.set(nameBytes.slice(0, 100), 0);
                                 
-                                // File mode (100-107)
                                 this.writeOctal(header, 100, 8, '0000644');
                                 
-                                // UID (108-115)
                                 this.writeOctal(header, 108, 8, '0000000');
                                 
-                                // GID (116-123)
                                 this.writeOctal(header, 116, 8, '0000000');
                                 
-                                // Size (124-135) - ensure size is a valid number
                                 const fileSize = typeof size === 'number' ? size : 0;
                                 const sizeOctal = fileSize.toString(8);
                                 this.writeOctal(header, 124, 12, sizeOctal);
                                 
-                                // Modification time (136-147)
                                 const mtime = Math.floor(Date.now() / 1000).toString(8);
                                 this.writeOctal(header, 136, 12, mtime);
                                 
-                                // Type flag (156) - regular file
-                                header[156] = 0x30; // '0'
+                              
                                 
-                                // Calculate checksum
-                                header.set(new TextEncoder().encode('        '), 148); // Clear checksum field
+                                header[156] = 0x30; 
+                                
+                                header.set(new TextEncoder().encode('        '), 148); 
                                 let checksum = 0;
                                 for (let i = 0; i < 512; i++) {
                                     checksum += header[i];
@@ -1296,7 +1258,6 @@ export default {
                             }
                         }
                         
-                        // Simple TAR Reader
                         class TarReader {
                             static read(arrayBuffer) {
                                 const data = new Uint8Array(arrayBuffer);
@@ -1306,7 +1267,6 @@ export default {
                                 while (offset < data.length - 512) {
                                     const header = data.slice(offset, offset + 512);
                                     
-                                    // Check if it's an empty block (end of archive)
                                     let isEmpty = true;
                                     for (let i = 0; i < 512; i++) {
                                         if (header[i] !== 0) {
@@ -1322,7 +1282,7 @@ export default {
                                     
                                     offset += 512;
                                     
-                                    if (type === 0x30 || type === 0) { // Regular file
+                                    if (type === 0x30 || type === 0) { 
                                         const fileData = data.slice(offset, offset + size);
                                         entries.push({
                                             name: name,
@@ -1331,7 +1291,7 @@ export default {
                                             read: () => fileData
                                         });
                                         offset += Math.ceil(size / 512) * 512;
-                                    } else if (type === 0x35) { // Directory
+                                    } else if (type === 0x35) { 
                                         entries.push({
                                             name: name,
                                             size: 0,
@@ -1339,7 +1299,6 @@ export default {
                                             read: () => new Uint8Array(0)
                                         });
                                     } else {
-                                        // Skip unknown types
                                         offset += Math.ceil(size / 512) * 512;
                                     }
                                 }
@@ -1370,12 +1329,10 @@ export default {
                 })
             ]).catch(error => {
                 console.error('Failed to load libraries:', error);
-                // Only show error if DOM is ready
                 const errorEl = document.getElementById('compress-error');
                 if (errorEl) {
                     showError('compress-error', 'Failed to load required libraries. Please refresh the page.');
                 } else {
-                    // If DOM not ready, show alert
                     setTimeout(() => {
                         const el = document.getElementById('compress-error');
                         if (el) {
@@ -1386,7 +1343,6 @@ export default {
             });
         }
 
-        // Initialize - load libraries first
         await loadLibraries();
     }
 };

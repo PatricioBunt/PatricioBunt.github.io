@@ -477,7 +477,6 @@ export default {
         let compareFile2 = null;
         let debounceTimer = null;
 
-        // Load crypto-js library
         async function loadCryptoJS() {
             if (window.CryptoJS) {
                 return;
@@ -494,7 +493,6 @@ export default {
             });
         }
 
-        // Load crypto-js for MD5
         await loadCryptoJS();
 
         window.setHashMode = (mode) => {
@@ -515,7 +513,6 @@ export default {
             fileModeBtn.classList.toggle('active', mode === 'file');
             compareModeBtn.classList.toggle('active', mode === 'compare');
 
-            // Update generate button state
             if (mode === 'text') {
                 const textInput = document.getElementById('hash-text-input').value.trim();
                 generateBtn.disabled = !textInput;
@@ -525,7 +522,6 @@ export default {
                 generateBtn.disabled = !compareFile1 || !compareFile2;
             }
 
-            // Clear results when switching modes
             document.getElementById('hash-results').style.display = 'none';
             document.getElementById('copy-all-btn').style.display = 'none';
         };
@@ -536,7 +532,6 @@ export default {
             hmacSection.classList.toggle('active', hmacEnabled);
         };
 
-        // Text mode - real-time hashing (debounced)
         const textInput = document.getElementById('hash-text-input');
         textInput.addEventListener('input', () => {
             const generateBtn = document.getElementById('generate-btn');
@@ -548,11 +543,10 @@ export default {
                     if (currentMode === 'text') {
                         generateHashes();
                     }
-                }, 500); // 500ms debounce
+                }, 500); 
             }
         });
 
-        // File mode - drag and drop
         const fileDropZone = document.getElementById('file-drop-zone');
         const fileInput = document.getElementById('file-input');
 
@@ -589,7 +583,6 @@ export default {
             document.getElementById('generate-btn').disabled = false;
         }
 
-        // Compare mode - file selection
         const compareFile1Zone = document.getElementById('compare-file1-zone');
         const compareFile1Input = document.getElementById('compare-file1-input');
         const compareFile2Zone = document.getElementById('compare-file2-zone');
@@ -640,7 +633,6 @@ export default {
             generateBtn.disabled = !compareFile1 || !compareFile2;
         }
 
-        // Hash generation functions
         async function hashMD5(data, isText = false) {
             if (!window.CryptoJS) {
                 throw new Error('CryptoJS library not loaded');
@@ -743,11 +735,9 @@ export default {
 
                     let hash;
                     if (hmacEnabled && algo.hmac) {
-                        // Web Crypto API expects 'SHA-1', 'SHA-256', etc.
-                        const shaAlgo = algo.name; // Already in correct format
+                        const shaAlgo = algo.name; 
                         hash = await hashHMAC(isText ? new TextEncoder().encode(data) : data, shaAlgo, hmacSecret);
                     } else if (hmacEnabled && !algo.hmac) {
-                        // MD5 with HMAC using crypto-js
                         if (isText) {
                             hash = window.CryptoJS.HmacMD5(data, hmacSecret).toString();
                         } else {
@@ -822,8 +812,7 @@ export default {
                             hash2 = await hashMD5(file2Data);
                         }
                     } else {
-                        // Web Crypto API uses 'SHA-1', 'SHA-256', etc.
-                        const shaAlgo = algo; // Already in correct format
+                            const shaAlgo = algo; 
                         if (hmacEnabled) {
                             hash1 = await hashHMAC(file1Data, shaAlgo, hmacSecret);
                             hash2 = await hashHMAC(file2Data, shaAlgo, hmacSecret);
@@ -844,7 +833,6 @@ export default {
 
                 updateProgress(100, 'Complete!');
 
-                // Display comparison results
                 const allMatch = results.every(r => r.match);
                 const uppercase = document.getElementById('uppercase-output').checked;
 

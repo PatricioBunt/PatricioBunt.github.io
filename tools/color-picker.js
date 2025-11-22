@@ -170,7 +170,6 @@ export default {
                 }
             });
             
-            // Initialize with default color
             updateColorValues(pickrInstance.getColor());
         } else {
             console.error('Pickr library not loaded');

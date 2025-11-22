@@ -440,8 +440,7 @@ class ToolkitApp {
                     self.applySettings();
                     self.updateLandingDropdown();
                     if (self.accentColorPickr) {
-                        self.accentColorPickr.setColor(self.settings.accentColor);
-                        // Update display box color
+                        self.accentColorPickr.setColor(self.settings.accentColor); 
                         const colorDisplay = document.getElementById('accent-color-display');
                         if (colorDisplay) {
                             colorDisplay.style.backgroundColor = self.settings.accentColor;
@@ -512,12 +511,10 @@ class ToolkitApp {
         const colorPickerContainer = document.getElementById('accent-color-pickr-container');
         const colorDisplay = document.getElementById('accent-color-display');
         
-        if (colorPickerContainer && colorDisplay && colorPickerItem && window.Pickr) {
-            // Set initial color on the display box
+        if (colorPickerContainer && colorDisplay && colorPickerItem && window.Pickr) { 
             const initialColor = this.settings.accentColor || '#007acc';
             colorDisplay.style.backgroundColor = initialColor;
-            
-            // Initialize Pickr for accent color (hidden container)
+             
             const accentColorPickr = Pickr.create({
                 el: colorPickerContainer,
                 theme: 'monolith',
@@ -544,7 +541,6 @@ class ToolkitApp {
                 useAsButton: false
             });
             
-            // Update display box color
             const updateDisplayColor = (color) => {
                 if (color) {
                     const hex = color.toHEXA().toString();
@@ -552,10 +548,8 @@ class ToolkitApp {
                 }
             };
             
-            // Set initial color
             accentColorPickr.setColor(initialColor);
             
-            // Update display when color changes
             accentColorPickr.on('change', (color) => {
                 updateDisplayColor(color);
             });
@@ -570,7 +564,6 @@ class ToolkitApp {
                 }
             });
             
-            // Make the entire dropdown item and color box clickable to open the picker
             const openPicker = (e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -580,14 +573,12 @@ class ToolkitApp {
             colorPickerItem.addEventListener('click', openPicker);
             colorDisplay.addEventListener('click', openPicker);
             
-            // Prevent dropdown from closing when clicking on color picker popup
             document.addEventListener('click', (e) => {
                 if (e.target.closest('.pcr-app[data-theme="monolith"]')) {
                     e.stopPropagation();
                 }
             });
             
-            // Store pickr instance for later updates
             this.accentColorPickr = accentColorPickr;
         }
         
