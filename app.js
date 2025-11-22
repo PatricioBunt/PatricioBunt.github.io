@@ -247,8 +247,10 @@ class ToolkitApp {
         
         if (this.favorites.length === 0) {
             favoritesCategory.style.display = 'none';
+            favoritesCategory.classList.remove('has-favorites');
         } else {
             favoritesCategory.style.display = 'block';
+            favoritesCategory.classList.add('has-favorites');
             const categoryHeader = favoritesCategory.querySelector('.category-header');
             const categoryItems = favoritesCategory.querySelector('.category-items');
             if (categoryHeader && categoryItems) {
