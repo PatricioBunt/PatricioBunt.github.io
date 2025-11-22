@@ -1,8 +1,6 @@
-// Service Worker for PWA and Pomodoro Timer Background Notifications
-const CACHE_NAME = 'dev-toolkit'; // Increment version to clear old cache
-const STATIC_CACHE = 'dev-toolkit-static'; // Increment version to clear old cache
+const CACHE_NAME = 'dev-toolkit';
+const STATIC_CACHE = 'dev-toolkit-static';
 
-// Install event - cache essential files
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(STATIC_CACHE).then((cache) => {
@@ -23,7 +21,6 @@ self.addEventListener('install', (event) => {
     self.skipWaiting();
 });
 
-// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
@@ -43,7 +40,6 @@ self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'TIMER_COMPLETE') {
         const { isWorkTime, title, body } = event.data;
         
-        // Show notification
         self.registration.showNotification(title, {
             body: body,
             icon: '/web-app-manifest-192x192.png',
@@ -59,31 +55,25 @@ self.addEventListener('message', (event) => {
     }
 });
 
-// Fetch event - network first for HTML, cache first for assets
 self.addEventListener('fetch', (event) => {
-    // For HTML files, always try network first to get latest version
     if (event.request.mode === 'navigate' || event.request.url.endsWith('.html') || event.request.url.endsWith('/')) {
         event.respondWith(
             fetch(event.request).then((response) => {
-                // If network succeeds, cache and return
                 const responseClone = response.clone();
                 caches.open(STATIC_CACHE).then((cache) => {
                     cache.put(event.request, responseClone);
                 });
                 return response;
             }).catch(() => {
-                // If network fails, try cache
                 return caches.match(event.request).then((cachedResponse) => {
                     return cachedResponse || caches.match('/index.html');
                 });
             })
         );
     } else {
-        // For other assets, cache first, fallback to network
         event.respondWith(
             caches.match(event.request).then((response) => {
                 return response || fetch(event.request).then((fetchResponse) => {
-                    // Cache the response for future use
                     const responseClone = fetchResponse.clone();
                     caches.open(STATIC_CACHE).then((cache) => {
                         cache.put(event.request, responseClone);
@@ -100,7 +90,6 @@ self.addEventListener('notificationclick', (event) => {
     
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-            // Focus existing window or open new one
             for (let client of clientList) {
                 if (client.url.includes(self.location.origin) && 'focus' in client) {
                     return client.focus();

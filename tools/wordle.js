@@ -1,4 +1,4 @@
-// Wordle Game Tool
+
 export default {
     title: 'Wordle',
     styles: `
@@ -222,8 +222,8 @@ export default {
             'YACHT', 'ZONAL', 'BREAD', 'CRANE', 'DRAIN', 'ELBOW', 'FOCUS', 'GRACE'
         ];
         
-        let ANSWER_WORDS = []; // Words that can be the answer (from shuffled_real_wordles.txt)
-        let VALID_WORDS = []; // Words that are valid guesses (from valid-wordle-words.txt)
+        let ANSWER_WORDS = []; 
+        let VALID_WORDS = []; 
         let currentWord = '';
         let currentRow = 0;
         let currentCell = 0;
@@ -231,20 +231,20 @@ export default {
         let stats = { games: 0, wins: 0, streak: 0, bestStreak: 0 };
         
         async function loadWordLists() {
-            // Load answer words (the shuffled real wordles - these are the possible answers)
+            
             const savedAnswers = localStorage.getItem(ANSWER_LIST_KEY);
             if (savedAnswers) {
                 const words = savedAnswers.split('\n').map(w => w.trim().toUpperCase()).filter(w => w.length === 5);
                 ANSWER_WORDS = words.length > 0 ? words : DEFAULT_WORDS;
             } else {
-                // Try to load from local file
+                
                 try {
                     const response = await fetch('/wordle-answers.txt');
                     if (response.ok) {
                         const text = await response.text();
-                        // Skip first line (comment) and filter words
+                        
                         const words = text.split('\n')
-                            .slice(1) // Skip first line with comment
+                            .slice(1) 
                             .map(w => w.trim().toUpperCase())
                             .filter(w => w.length === 5 && /^[A-Z]{5}$/.test(w));
                         if (words.length > 0) {
@@ -262,13 +262,13 @@ export default {
                 }
             }
             
-            // Load valid words (for guess validation - all valid Wordle words)
+            
             const savedValid = localStorage.getItem(VALID_WORDS_KEY);
             if (savedValid) {
                 const words = savedValid.split('\n').map(w => w.trim().toUpperCase()).filter(w => w.length === 5);
                 VALID_WORDS = words.length > 0 ? words : ANSWER_WORDS;
             } else {
-                // Try to load from local file
+                
                 try {
                     const response = await fetch('/wordle-valid-words.txt');
                     if (response.ok) {
@@ -295,7 +295,6 @@ export default {
         }
         
         function updateWordCount() {
-            // No longer needed, but keeping function for potential future use
         }
         
         function loadStats() {
@@ -403,25 +402,25 @@ export default {
                 return;
             }
             
-            // Get guess
+            
             let guess = '';
             for (let i = 0; i < 5; i++) {
                 guess += getCell(currentRow, i).textContent;
             }
             
-            // Validate word - must be in VALID_WORDS list
+            
             if (guess.length !== 5) {
                 showMessage('Word must be 5 letters!', 'error');
                 return;
             }
             
-            // Check if word is in valid words list
+            
             if (!VALID_WORDS.includes(guess)) {
                 showMessage('Not a valid word!', 'error');
                 return;
             }
             
-            // Check guess
+            
             const result = checkGuess(guess);
             let allCorrect = true;
             
@@ -432,7 +431,7 @@ export default {
                 cell.classList.remove('filled');
                 cell.classList.add(status);
                 
-                // Update keyboard
+                
                 if (key && !key.classList.contains('correct')) {
                     key.classList.remove('present', 'absent');
                     key.classList.add(status);
@@ -444,7 +443,7 @@ export default {
             });
             
             if (allCorrect) {
-                // Win!
+                
                 gameOver = true;
                 stats.games = (stats.games || 0) + 1;
                 stats.wins = (stats.wins || 0) + 1;
@@ -462,7 +461,7 @@ export default {
                 currentCell = 0;
                 
                 if (currentRow >= 6) {
-                    // Game over
+                    
                     gameOver = true;
                     stats.games = (stats.games || 0) + 1;
                     stats.streak = 0;
@@ -480,7 +479,7 @@ export default {
             const wordLetters = currentWord.split('');
             const guessLetters = guess.split('');
             
-            // First pass: mark correct positions
+            
             for (let i = 0; i < 5; i++) {
                 if (guessLetters[i] === wordLetters[i]) {
                     result[i] = 'correct';
@@ -489,7 +488,7 @@ export default {
                 }
             }
             
-            // Second pass: mark present (wrong position)
+            
             for (let i = 0; i < 5; i++) {
                 if (guessLetters[i] && result[i] !== 'correct') {
                     const index = wordLetters.indexOf(guessLetters[i]);
@@ -532,7 +531,6 @@ export default {
         
         window.newGame = newGame;
         
-        // Keyboard input
         document.addEventListener('keydown', (e) => {
             if (gameOver && e.key !== 'Enter') return;
             
@@ -545,7 +543,6 @@ export default {
             }
         });
         
-        // Initialize
         loadWordLists().then(() => {
             loadStats();
             newGame();

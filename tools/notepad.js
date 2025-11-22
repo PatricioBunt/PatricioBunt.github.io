@@ -1,4 +1,4 @@
-// Notepad Tool (uses localStorage)
+
 export default {
     title: 'Notepad',
     styles: `
@@ -132,21 +132,18 @@ export default {
         const STORAGE_KEY = 'toolkit_notepad';
         let saveTimeout;
         
-        // Load notepad from localStorage
         function loadNotepad() {
             const notepad = document.getElementById('notepad');
             notepad.value = localStorage.getItem(STORAGE_KEY) || '';
             updateStats();
         }
         
-        // Save notepad to localStorage
         function saveNotepad() {
             const notepad = document.getElementById('notepad');
             localStorage.setItem(STORAGE_KEY, notepad.value);
             showSaveIndicator();
         }
         
-        // Update statistics
         function updateStats() {
             const notepad = document.getElementById('notepad');
             const text = notepad.value;
@@ -159,7 +156,6 @@ export default {
             document.getElementById('notepad-lines').textContent = lines;
         }
         
-        // Show save indicator
         function showSaveIndicator() {
             const indicator = document.getElementById('notepad-save-indicator');
             indicator.classList.add('show', 'saved');
@@ -168,7 +164,6 @@ export default {
             }, 2000);
         }
         
-        // Auto-save notepad with debounce
         const notepad = document.getElementById('notepad');
         notepad.addEventListener('input', () => {
             updateStats();
@@ -206,7 +201,6 @@ export default {
             }
         };
         
-        // Initialize
         loadNotepad();
     }
 };

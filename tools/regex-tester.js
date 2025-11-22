@@ -1,4 +1,4 @@
-// Regex Tester Tool
+
 export default {
     title: 'Regex Tester',
     styles: `
@@ -717,7 +717,6 @@ export default {
             }
         ];
         
-        // Populate examples
         const examplesContainer = document.getElementById('regex-examples');
         examples.forEach(example => {
             const exampleBtn = document.createElement('button');
@@ -736,7 +735,6 @@ export default {
             examplesContainer.appendChild(exampleBtn);
         });
         
-        // Auto-test on input
         let testTimeout;
         const patternInput = document.getElementById('regex-pattern');
         const textInput = document.getElementById('regex-text');
@@ -781,13 +779,13 @@ export default {
             }
             
             try {
-                // Build flags
+                
                 let flags = '';
                 if (document.getElementById('regex-global').checked) flags += 'g';
                 if (document.getElementById('regex-case').checked) flags += 'i';
                 if (document.getElementById('regex-multiline').checked) flags += 'm';
                 
-                // Ensure global flag for matchAll
+                
                 const matchFlags = flags.includes('g') ? flags : flags + 'g';
                 const regex = new RegExp(pattern, flags);
                 const matches = [...text.matchAll(new RegExp(pattern, matchFlags))];
@@ -804,7 +802,7 @@ export default {
                     return;
                 }
                 
-                // Statistics
+                
                 const stats = {
                     totalMatches: matches.length,
                     totalGroups: matches.reduce((sum, m) => sum + (m.length - 1), 0),
@@ -830,7 +828,7 @@ export default {
                     <div class="regex-matches-container">
                 `;
                 
-                // Highlight matches in text (process in reverse to maintain indices)
+                
                 let highlightedText = text;
                 const escapeMap = new Map();
                 matches.reverse().forEach((match, idx) => {
@@ -853,7 +851,7 @@ export default {
                     </div>
                 `;
                 
-                // List all matches
+                
                 html += '<div class="regex-matches-list"><div class="regex-text-label">All Matches:</div>';
                 matches.forEach((match, idx) => {
                     html += `<div class="regex-match-item" data-match-index="${idx}">`;
@@ -881,7 +879,7 @@ export default {
                 
                 output.innerHTML = html;
                 
-                // Add hover effects
+                
                 document.querySelectorAll('.regex-match-item').forEach(item => {
                     const index = item.dataset.matchIndex;
                     item.addEventListener('mouseenter', () => {
@@ -923,7 +921,7 @@ export default {
             
             const content = document.getElementById('regex-tutorial-section-content');
             if (content) {
-                // Make sure tutorial is expanded
+                
                 const tutorialContent = document.getElementById('regex-tutorial-content');
                 if (tutorialContent && tutorialContent.style.display === 'none') {
                     toggleRegexTutorial();

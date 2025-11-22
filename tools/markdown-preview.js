@@ -1,4 +1,4 @@
-// Markdown Preview Tool
+
 export default {
     title: 'Markdown Preview',
     html: `
@@ -22,12 +22,10 @@ export default {
         </div>
     `,
     init() {
-        // Implementation coming soon - will use a markdown library
         const input = document.getElementById('markdown-input');
         const output = document.getElementById('markdown-output');
         
         input.addEventListener('input', () => {
-            // Basic markdown preview (can be enhanced with a library)
             output.textContent = 'Markdown preview coming soon - will use a markdown library';
         });
     }

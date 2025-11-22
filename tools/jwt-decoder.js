@@ -1,4 +1,4 @@
-// JWT Decoder Tool
+
 export default {
     title: 'JWT Decoder',
     html: `
@@ -41,11 +41,11 @@ export default {
                     throw new Error('Invalid JWT format. Expected 3 parts separated by dots.');
                 }
                 
-                // Decode header
+                
                 const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
                 headerOutput.value = JSON.stringify(header, null, 2);
                 
-                // Decode payload
+                
                 const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
                 payloadOutput.value = JSON.stringify(payload, null, 2);
             } catch (error) {

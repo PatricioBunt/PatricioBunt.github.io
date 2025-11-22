@@ -1,4 +1,4 @@
-// Levenshtein Distance Tool
+
 export default {
     title: 'Levenshtein Distance',
     styles: `
@@ -177,7 +177,6 @@ export default {
         </div>
     `,
     init() {
-        // Helper function to convert hex to rgba
         function hexToRgba(hex, alpha) {
             const r = parseInt(hex.slice(1, 3), 16);
             const g = parseInt(hex.slice(3, 5), 16);
@@ -199,9 +198,9 @@ export default {
                         dp[i][j] = dp[i - 1][j - 1];
                     } else {
                         dp[i][j] = Math.min(
-                            dp[i - 1][j] + 1,     // deletion
-                            dp[i][j - 1] + 1,     // insertion
-                            dp[i - 1][j - 1] + 1  // substitution
+                            dp[i - 1][j] + 1,     
+                            dp[i][j - 1] + 1,     
+                            dp[i - 1][j - 1] + 1  
                         );
                     }
                 }
@@ -297,7 +296,7 @@ export default {
                 }
             }
             
-            // Calculate distance matrix
+            
             const matrix = [];
             const maxDistance = Math.max(...strings.map(s => s.length)) * strings.length;
             
@@ -309,15 +308,15 @@ export default {
                     } else if (i < j) {
                         matrix[i][j] = levenshteinDistance(strings[i], strings[j]);
                     } else {
-                        matrix[i][j] = matrix[j][i]; // Symmetric matrix
+                        matrix[i][j] = matrix[j][i]; 
                     }
                 }
             }
             
-            // Create table
+            
             let tableHTML = '<div style="overflow-x: auto;"><table class="levenshtein-matrix-table">';
             
-            // Header row
+            
             tableHTML += '<thead><tr><th></th>';
             strings.forEach((str, idx) => {
                 const displayStr = str.length > 15 ? str.substring(0, 12) + '...' : str;
@@ -325,14 +324,14 @@ export default {
             });
             tableHTML += '</tr></thead><tbody>';
             
-            // Data rows
+            
             strings.forEach((str, i) => {
                 const displayStr = str.length > 15 ? str.substring(0, 12) + '...' : str;
                 tableHTML += `<tr><th title="${str}">${displayStr}</th>`;
                 strings.forEach((_, j) => {
                     const distance = matrix[i][j];
                     const intensity = i === j ? 0 : (1 - distance / maxDistance);
-                    // Use accent color with opacity for background
+                    
                     const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
                     const opacity = i === j ? 0 : (0.1 + intensity * 0.2);
                     const bgColor = i === j 
@@ -351,7 +350,7 @@ export default {
             
             tableHTML += '</tbody></table></div>';
             
-            // Add summary
+            
             const distances = [];
             for (let i = 0; i < strings.length; i++) {
                 for (let j = i + 1; j < strings.length; j++) {

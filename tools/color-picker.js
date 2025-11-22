@@ -1,4 +1,4 @@
-// Color Picker Tool
+
 export default {
     title: 'Color Picker',
     styles: `
@@ -105,7 +105,7 @@ export default {
             document.getElementById('color-hex').value = hex.toUpperCase();
             document.getElementById('color-rgb').value = `rgb(${r}, ${g}, ${b})`;
             
-            // Convert to HSL
+            
             const rNorm = r / 255;
             const gNorm = g / 255;
             const bNorm = b / 255;

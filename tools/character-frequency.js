@@ -1,4 +1,4 @@
-// Character Frequency Analyzer Tool
+
 export default {
     title: 'Character Frequency Analyzer',
     html: `

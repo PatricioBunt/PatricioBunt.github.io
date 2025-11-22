@@ -1,4 +1,4 @@
-// SQL Formatter Tool
+
 export default {
     title: 'SQL Formatter',
     html: `
@@ -24,7 +24,6 @@ export default {
         </div>
     `,
     init() {
-        // Implementation coming soon - will use a SQL formatter library
     }
 };
 

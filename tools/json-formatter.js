@@ -1,4 +1,4 @@
-// JSON Formatter Tool
+
 export default {
     title: 'JSON Formatter',
     styles: `
@@ -490,7 +490,6 @@ export default {
             }
         };
         
-        // Initialize with tree view showing empty state
         setTimeout(() => {
             const viewer = document.getElementById('json-viewer');
             const output = document.getElementById('json-output');

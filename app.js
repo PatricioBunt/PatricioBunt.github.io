@@ -1,5 +1,3 @@
-// VSCode-Inspired Toolkit - Main Application Logic
-
 class ToolkitApp {
     constructor() {
         this.currentTool = null;
@@ -16,19 +14,15 @@ class ToolkitApp {
         this.isFullscreen = true;
         this.fullscreenElement = element;
         
-        // Hide sidebar
         const sidebar = document.getElementById('sidebar');
         if (sidebar) sidebar.style.display = 'none';
         
-        // Hide content header controls (keep title)
         const contentHeader = document.querySelector('.content-header');
         const favoriteBtn = contentHeader?.querySelector('.favorite-btn');
         if (favoriteBtn) favoriteBtn.style.display = 'none';
         
-        // Add exit button to app header on the right side
         const appHeader = document.querySelector('.app-header');
         if (appHeader && !appHeader.querySelector('.fullscreen-exit-btn')) {
-            // Create a right-side menu container if it doesn't exist
             let rightMenu = appHeader.querySelector('.app-menu-right');
             if (!rightMenu) {
                 rightMenu = document.createElement('div');
@@ -45,7 +39,6 @@ class ToolkitApp {
             rightMenu.appendChild(exitBtn);
         }
         
-        // Hide other tool sections, show only fullscreen element
         const toolContainer = document.querySelector('.tool-container');
         if (toolContainer) {
             Array.from(toolContainer.children).forEach(child => {
@@ -55,7 +48,6 @@ class ToolkitApp {
             });
         }
         
-        // Hide parent sections that don't contain the element
         const allSections = document.querySelectorAll('.tool-section');
         allSections.forEach(section => {
             if (!section.contains(element)) {
@@ -63,7 +55,6 @@ class ToolkitApp {
             }
         });
         
-        // Make element fullscreen
         element.classList.add('fullscreen-content');
         document.body.classList.add('fullscreen-mode');
     }
@@ -71,25 +62,20 @@ class ToolkitApp {
     exitFullscreen() {
         this.isFullscreen = false;
         
-        // Show sidebar
         const sidebar = document.getElementById('sidebar');
         if (sidebar) sidebar.style.display = '';
         
-        // Show content header controls
         const favoriteBtn = document.querySelector('.content-header .favorite-btn');
         if (favoriteBtn) favoriteBtn.style.display = '';
         
-        // Remove exit button from app header
         const exitBtn = document.querySelector('.app-header .fullscreen-exit-btn');
         if (exitBtn) exitBtn.remove();
         
-        // Remove right menu container if it's empty
         const rightMenu = document.querySelector('.app-menu-right');
         if (rightMenu && rightMenu.children.length === 0) {
             rightMenu.remove();
         }
         
-        // Show all tool sections
         const toolContainer = document.querySelector('.tool-container');
         if (toolContainer) {
             Array.from(toolContainer.children).forEach(child => {
@@ -97,13 +83,11 @@ class ToolkitApp {
             });
         }
         
-        // Show all tool sections
         const allSections = document.querySelectorAll('.tool-section');
         allSections.forEach(section => {
             section.style.display = '';
         });
         
-        // Remove fullscreen class
         if (this.fullscreenElement) {
             this.fullscreenElement.classList.remove('fullscreen-content');
         }
@@ -112,10 +96,8 @@ class ToolkitApp {
     }
     
     injectToolStyles(css, toolName) {
-        // Remove any existing tool styles
         this.removeToolStyles();
         
-        // Create a style element with unique ID
         const styleId = `tool-styles-${toolName}`;
         const styleElement = document.createElement('style');
         styleElement.id = styleId;
@@ -147,7 +129,6 @@ class ToolkitApp {
         this.handleRouting();
         this.registerServiceWorker();
         
-        // Listen for hash changes
         window.addEventListener('hashchange', () => this.handleRouting());
     }
     
@@ -157,12 +138,10 @@ class ToolkitApp {
                 .then(registration => {
                     console.log('Service Worker registered:', registration);
                     
-                    // Check for updates
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // New service worker available
                                 console.log('New service worker available');
                             }
                         });
@@ -179,18 +158,15 @@ class ToolkitApp {
         const toggle = document.getElementById('sidebar-toggle');
         const resizeHandle = document.getElementById('sidebar-resize-handle');
         
-        // Apply saved width
         if (this.settings.sidebarWidth) {
             sidebar.style.width = `${this.settings.sidebarWidth}px`;
             document.documentElement.style.setProperty('--sidebar-width', `${this.settings.sidebarWidth}px`);
         }
         
-        // Apply collapsed state
         if (this.settings.sidebarCollapsed) {
             sidebar.classList.add('collapsed');
         }
         
-        // Toggle collapse
         if (toggle) {
             toggle.addEventListener('click', () => {
                 sidebar.classList.toggle('collapsed');
@@ -199,7 +175,6 @@ class ToolkitApp {
             });
         }
         
-        // Resize handle
         if (resizeHandle) {
             let isResizing = false;
             let startX = 0;
@@ -247,7 +222,6 @@ class ToolkitApp {
         const index = this.favorites.indexOf(toolName);
         if (index > -1) {
             this.favorites.splice(index, 1);
-            // If this was the default landing page, reset to welcome
             if (this.settings.defaultLanding === `tool-${toolName}`) {
                 this.settings.defaultLanding = 'welcome';
                 this.saveSettings();
@@ -263,7 +237,6 @@ class ToolkitApp {
     }
 
     updateFavoritesDisplay() {
-        // Update sidebar favorites
         const favoritesList = document.getElementById('favorites-list');
         const favoritesCategory = document.getElementById('favorites-category');
         
@@ -276,7 +249,6 @@ class ToolkitApp {
             favoritesCategory.style.display = 'none';
         } else {
             favoritesCategory.style.display = 'block';
-            // Auto-expand favorites category when it has items
             const categoryHeader = favoritesCategory.querySelector('.category-header');
             const categoryItems = favoritesCategory.querySelector('.category-items');
             if (categoryHeader && categoryItems) {
@@ -293,7 +265,6 @@ class ToolkitApp {
                 `;
             }).join('');
             
-            // Re-attach event listeners
             favoritesList.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -305,7 +276,6 @@ class ToolkitApp {
             });
         }
 
-        // Update favorites cards on welcome screen
         this.updateFavoritesCards();
     }
 
@@ -333,7 +303,6 @@ class ToolkitApp {
     }
 
     getToolInfo(toolName) {
-        // Get tool info from the nav items
         const navItem = document.querySelector(`[data-tool="${toolName}"]`);
         if (navItem) {
             return {
@@ -354,25 +323,19 @@ class ToolkitApp {
     }
 
     saveSettings() {
-        console.log('saveSettings called with:', this.settings);
         localStorage.setItem('toolkit_settings', JSON.stringify(this.settings));
         this.applySettings();
     }
 
     applySettings() {
-        console.log('applySettings called, theme:', this.settings.theme);
-        // Apply theme
         document.body.classList.remove('theme-dark', 'theme-light');
         document.body.classList.add(`theme-${this.settings.theme}`);
-        console.log('Body classes after theme apply:', document.body.className);
         
-        // Apply accent color
         if (this.settings.accentColor) {
             document.documentElement.style.setProperty('--accent-color', this.settings.accentColor);
             document.documentElement.style.setProperty('--accent-hover', this.lightenColor(this.settings.accentColor, 10));
         }
         
-        // Apply sidebar width
         if (this.settings.sidebarWidth) {
             document.documentElement.style.setProperty('--sidebar-width', `${this.settings.sidebarWidth}px`);
         }
@@ -390,7 +353,6 @@ class ToolkitApp {
     }
 
     setupEventListeners() {
-        // Category toggle functionality
         document.querySelectorAll('.category-header').forEach(header => {
             header.addEventListener('click', (e) => {
                 const category = header.dataset.category;
@@ -398,7 +360,6 @@ class ToolkitApp {
             });
         });
 
-        // Navigation item clicks
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -409,20 +370,16 @@ class ToolkitApp {
             });
         });
 
-        // Header menu items - dropdown toggle
         const settingsMenuItem = document.getElementById('settings-menu-item');
         if (settingsMenuItem) {
             settingsMenuItem.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const isActive = settingsMenuItem.classList.contains('active');
-                // Close all dropdowns
                 document.querySelectorAll('.menu-item').forEach(item => {
                     item.classList.remove('active');
                 });
-                // Toggle this dropdown
                 if (!isActive) {
                     settingsMenuItem.classList.add('active');
-                    // Update landing dropdown when opening settings
                     setTimeout(() => {
                         this.updateLandingDropdown();
                     }, 0);
@@ -430,7 +387,6 @@ class ToolkitApp {
             });
         }
 
-        // Dropdown item actions - MUST run before close handler
         const self = this;
         document.addEventListener('click', function(e) {
             const item = e.target.closest('.dropdown-item');
@@ -441,27 +397,22 @@ class ToolkitApp {
             const action = item.dataset.action;
             
             if (action === 'theme') {
-                // Theme submenu is handled by hover
                 return;
             }
             if (action === 'accent-color') {
-                // Color picker is inline
                 return;
             }
             if (action === 'default-landing') {
-                // Landing submenu is handled by hover
                 return;
             }
             if (action === 'toggle-upcoming') {
                 e.stopPropagation();
                 e.preventDefault();
-                // Toggle the setting
                 const currentValue = self.settings.showUpcoming || false;
                 self.settings.showUpcoming = !currentValue;
                 self.saveSettings();
                 self.updateUpcomingIcon();
                 self.toggleUpcomingTools();
-                // Don't close the dropdown for this action
                 return;
             }
             if (action === 'clear-favorites') {
@@ -486,7 +437,6 @@ class ToolkitApp {
                     self.settings = self.loadSettings();
                     self.applySettings();
                     self.updateLandingDropdown();
-                    // Update color picker
                     const colorPicker = document.getElementById('accent-color-inline');
                     if (colorPicker) {
                         colorPicker.value = self.settings.accentColor;
@@ -497,47 +447,35 @@ class ToolkitApp {
                 });
                 return;
             }
-        }, true); // Use capture phase to run before other handlers
+        }, true);
 
-        // Theme selection - must be before the general dropdown click handler
         document.addEventListener('click', (e) => {
-            console.log('Click event detected:', e.target, e.target.closest('.dropdown-item[data-theme]'));
             const themeItem = e.target.closest('.dropdown-item[data-theme]');
             if (themeItem) {
-                console.log('Theme item found:', themeItem, 'Theme:', themeItem.dataset.theme);
                 e.stopPropagation();
                 e.preventDefault();
                 const theme = themeItem.dataset.theme;
-                console.log('Setting theme to:', theme);
                 this.settings.theme = theme;
-                console.log('Current settings:', this.settings);
                 this.saveSettings();
-                console.log('Settings saved, applying...');
                 document.querySelectorAll('.menu-item').forEach(item => {
                     item.classList.remove('active');
                 });
                 return false;
-            } else {
-                console.log('No theme item found. Closest dropdown-item:', e.target.closest('.dropdown-item'));
             }
-        }, true); // Use capture phase to handle before other handlers
+        }, true);
 
-        // Close dropdowns when clicking outside
         document.addEventListener('click', (e) => {
-            // Don't process if clicking on a theme submenu item (handled separately)
             if (e.target.closest('.dropdown-item[data-theme]')) {
-                return; // Theme selection handler will handle it
+                return;
             }
             
-            // Don't close if clicking on a dropdown item (unless it's a submenu item)
             if (e.target.closest('.dropdown-item')) {
                 const action = e.target.closest('.dropdown-item')?.dataset.action;
-                // Only close for submenu items or items without special handling
                 if (action === 'theme' || action === 'default-landing') {
-                    return; // Let submenu handle it
+                    return;
                 }
                 if (action === 'toggle-upcoming' || action === 'clear-favorites' || action === 'reset-settings') {
-                    return; // Already handled, don't close
+                    return;
                 }
             }
             if (!e.target.closest('.menu-item')) {
@@ -547,7 +485,6 @@ class ToolkitApp {
             }
         });
 
-        // Landing page selection
         document.addEventListener('click', (e) => {
             const landingItem = e.target.closest('.dropdown-item[data-landing]');
             if (landingItem) {
@@ -555,7 +492,6 @@ class ToolkitApp {
                 const landing = landingItem.dataset.landing;
                 this.settings.defaultLanding = landing;
                 this.saveSettings();
-                // If setting to welcome, navigate there
                 if (landing === 'welcome') {
                     window.location.hash = '';
                     this.showWelcomeScreen();
@@ -566,12 +502,10 @@ class ToolkitApp {
             }
         });
 
-        // Accent color picker - make whole button clickable
         const colorPickerItem = document.querySelector('[data-action="accent-color"]');
         const colorPicker = document.getElementById('accent-color-inline');
         if (colorPicker && colorPickerItem) {
             colorPicker.value = this.settings.accentColor;
-            // Make the whole dropdown item trigger the color picker
             colorPickerItem.addEventListener('click', (e) => {
                 if (e.target !== colorPicker) {
                     e.stopPropagation();
@@ -585,7 +519,6 @@ class ToolkitApp {
             });
         }
         
-        // Update upcoming tools toggle icon
         this.updateUpcomingIcon();
     }
 
@@ -596,11 +529,9 @@ class ToolkitApp {
             return;
         }
 
-        // Clear existing favorites from dropdown
         const existingFavorites = landingSubmenu.querySelectorAll('.dropdown-item[data-landing^="tool-"]');
         existingFavorites.forEach(item => item.remove());
 
-        // Add favorites to dropdown
         if (this.favorites && this.favorites.length > 0) {
             this.favorites.forEach(toolName => {
                 const toolInfo = this.getToolInfo(toolName);
@@ -612,9 +543,7 @@ class ToolkitApp {
                 landingSubmenu.appendChild(item);
             });
 
-            // Update landing selection handler for favorites
             landingSubmenu.querySelectorAll('.dropdown-item[data-landing^="tool-"]').forEach(item => {
-                // Remove existing listeners by cloning
                 const newItem = item.cloneNode(true);
                 item.parentNode.replaceChild(newItem, item);
                 
@@ -649,10 +578,8 @@ class ToolkitApp {
     }
 
     navigateToTool(toolName) {
-        // Update URL hash
         window.location.hash = `/tools/${toolName}`;
         
-        // Update active state
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
@@ -661,7 +588,6 @@ class ToolkitApp {
         if (activeItem) {
             activeItem.classList.add('active');
             
-            // Expand parent category if collapsed
             const category = activeItem.closest('.nav-category');
             if (category) {
                 const categoryHeader = category.querySelector('.category-header');
@@ -673,7 +599,6 @@ class ToolkitApp {
             }
         }
         
-        // Load and display tool
         this.loadTool(toolName);
     }
 
@@ -685,7 +610,6 @@ class ToolkitApp {
             return;
         }
 
-        // Parse hash: #/tools/tool-name
         const match = hash.match(/#\/tools\/(.+)/);
         if (match) {
             const toolName = match[1];
@@ -701,14 +625,12 @@ class ToolkitApp {
         
         toolTitle.textContent = 'Select a tool';
         
-        // Check if default landing is a specific tool
         if (this.settings.defaultLanding && this.settings.defaultLanding.startsWith('tool-')) {
             const toolName = this.settings.defaultLanding.replace('tool-', '');
             this.navigateToTool(toolName);
             return;
         }
         
-        // Check if default landing is favorites
         if (this.settings.defaultLanding === 'favorites' && this.favorites.length > 0) {
             contentBody.innerHTML = `
                 <div class="welcome-screen">
@@ -752,7 +674,6 @@ class ToolkitApp {
             `;
         }
         
-        // Remove active states
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
@@ -773,35 +694,28 @@ class ToolkitApp {
     toggleUpcomingTools() {
         const showUpcoming = this.settings.showUpcoming || false;
         
-        // First, ensure all categories are visible by default (reset any inline styles)
         document.querySelectorAll('.nav-category').forEach(category => {
             category.style.display = '';
         });
         
-        // Then process coming-soon items
         document.querySelectorAll('[data-coming-soon="true"]').forEach(item => {
             const category = item.closest('.nav-category');
             if (category) {
-                // Check if all items in this category are coming soon
                 const allItems = category.querySelectorAll('.nav-item');
                 const allComingSoon = Array.from(allItems).every(
                     navItem => navItem.dataset.comingSoon === 'true'
                 );
                 
                 if (!showUpcoming) {
-                    // Hide individual coming soon items
                     item.style.display = 'none';
-                    // Hide category if all items are coming soon
                     if (allComingSoon && allItems.length > 0) {
                         category.style.display = 'none';
                     }
                 } else {
-                    // Show all items
                     item.style.display = '';
                     category.style.display = 'block';
                 }
             } else {
-                // If item is not in a category, just toggle its visibility
                 item.style.display = showUpcoming ? '' : 'none';
             }
         });
@@ -811,11 +725,9 @@ class ToolkitApp {
         const toolTitle = document.getElementById('tool-title');
         const contentBody = document.getElementById('tool-content');
         
-        // Show loading state
         contentBody.innerHTML = '<div class="tool-container"><p>Loading tool...</p></div>';
         
         try {
-            // Try to load tool module
             const toolModule = await this.getToolModule(toolName);
             
             if (toolModule) {
@@ -827,18 +739,8 @@ class ToolkitApp {
                         <i class="fas fa-star"></i>
                     </button>
                 `;
-                // Remove previous tool's styles if any
                 this.removeToolStyles();
                 
-                // Inject tool-specific styles if provided
-                if (toolModule.styles) {
-                    this.injectToolStyles(toolModule.styles, toolName);
-                }
-                
-                // Remove previous tool's styles if any
-                this.removeToolStyles();
-                
-                // Inject tool-specific styles if provided
                 if (toolModule.styles) {
                     this.injectToolStyles(toolModule.styles, toolName);
                 }
@@ -849,7 +751,6 @@ class ToolkitApp {
                     </div>
                 `;
                 
-                // Attach favorite button event listener
                 const favBtn = toolTitle.querySelector('.favorite-btn');
                 if (favBtn) {
                     favBtn.addEventListener('click', (e) => {
@@ -858,14 +759,12 @@ class ToolkitApp {
                     });
                 }
                 
-                // Initialize tool if it has an init function
                 if (toolModule.init) {
                     toolModule.init();
                 }
                 
                 this.currentTool = toolName;
             } else {
-                // Tool not implemented yet
                 const isFav = this.isFavorite(toolName);
                 toolTitle.innerHTML = `
                     ${this.formatToolName(toolName)}
@@ -874,7 +773,6 @@ class ToolkitApp {
                     </button>
                 `;
                 
-                // Attach favorite button event listener
                 const favBtn = toolTitle.querySelector('.favorite-btn');
                 if (favBtn) {
                     favBtn.addEventListener('click', (e) => {
@@ -907,18 +805,15 @@ class ToolkitApp {
     }
 
     async getToolModule(toolName) {
-        // Check if tool is already loaded
         if (this.tools[toolName]) {
             return this.tools[toolName];
         }
 
-        // Try to load from tools directory
         try {
             const module = await import(`./tools/${toolName}.js`);
             this.tools[toolName] = module.default || module;
             return this.tools[toolName];
         } catch (error) {
-            // Tool module doesn't exist yet, return null
             return null;
         }
     }
@@ -931,7 +826,6 @@ class ToolkitApp {
     }
 
     loadToolModules() {
-        // Pre-expand first category by default
         const firstCategory = document.querySelector('.nav-category .category-header');
         if (firstCategory) {
             const category = firstCategory.dataset.category;
@@ -940,9 +834,7 @@ class ToolkitApp {
     }
 }
 
-// Utility functions for tools
 const ToolUtils = {
-    // Copy to clipboard
     copyToClipboard(text) {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(() => {
@@ -951,7 +843,6 @@ const ToolUtils = {
                 console.error('Failed to copy:', err);
             });
         } else {
-            // Fallback for older browsers
             const textarea = document.createElement('textarea');
             textarea.value = text;
             textarea.style.position = 'fixed';
@@ -968,7 +859,6 @@ const ToolUtils = {
         }
     },
 
-    // Show notification
     showNotification(message, duration = 2000) {
         const notification = document.createElement('div');
         notification.style.cssText = `
@@ -994,7 +884,6 @@ const ToolUtils = {
         }, duration);
     },
 
-    // Format JSON with indentation
     formatJSON(jsonString, indent = 2) {
         try {
             const obj = JSON.parse(jsonString);
@@ -1004,7 +893,6 @@ const ToolUtils = {
         }
     },
 
-    // Minify JSON
     minifyJSON(jsonString) {
         try {
             const obj = JSON.parse(jsonString);
@@ -1015,7 +903,6 @@ const ToolUtils = {
     }
 };
 
-// Add CSS animations for notifications
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
@@ -1041,7 +928,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Initialize app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         window.toolkitApp = new ToolkitApp();
@@ -1050,7 +936,6 @@ if (document.readyState === 'loading') {
     window.toolkitApp = new ToolkitApp();
 }
 
-// Make fullscreen methods globally accessible
 window.enterFullscreen = (element) => {
     if (window.toolkitApp) {
         window.toolkitApp.enterFullscreen(element);
@@ -1063,10 +948,8 @@ window.exitFullscreen = () => {
     }
 };
 
-// Export for use in tool modules
 window.ToolUtils = ToolUtils;
 
-// Global functions for settings modal
 function closeSettings() {
     document.getElementById('settings-modal').style.display = 'none';
 }
@@ -1094,14 +977,13 @@ function resetSettings() {
     }
 }
 
-// Add toggleFavoriteTool method to ToolkitApp
 ToolkitApp.prototype.toggleFavoriteTool = function(toolName) {
     if (!toolName) {
         console.error('No toolName provided to toggleFavoriteTool');
         return;
     }
     this.toggleFavorite(toolName);
-    // Update the favorite button using data attribute
+    
     const btn = document.querySelector(`.favorite-btn[data-tool-name="${toolName}"]`);
     if (btn) {
         if (this.isFavorite(toolName)) {
@@ -1112,11 +994,9 @@ ToolkitApp.prototype.toggleFavoriteTool = function(toolName) {
             btn.title = 'Add to favorites';
         }
     }
-    // Always update landing dropdown
     this.updateLandingDropdown();
 };
 
-// Close modals when clicking outside
 window.addEventListener('click', (e) => {
     const settingsModal = document.getElementById('settings-modal');
     const helpModal = document.getElementById('help-modal');

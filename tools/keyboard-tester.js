@@ -1,4 +1,4 @@
-// Keyboard Tester Tool
+
 export default {
     title: 'Keyboard Tester',
     html: `
@@ -93,7 +93,6 @@ export default {
         
         window.addEventListener('keydown', handleKeyPress);
         
-        // Also listen on the display area for focus
         display.addEventListener('click', () => {
             display.focus();
         });

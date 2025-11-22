@@ -1,4 +1,4 @@
-// UUID Generator Tool
+
 export default {
     title: 'UUID Generator',
     html: `
@@ -29,7 +29,6 @@ export default {
         </div>
     `,
     init() {
-        // Simple UUID v4 generator (cryptographically random)
         function generateUUIDv4() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 const r = Math.random() * 16 | 0;
@@ -38,7 +37,6 @@ export default {
             });
         }
         
-        // Simple UUID v1 generator (timestamp-based, simplified)
         function generateUUIDv1() {
             const timestamp = Date.now();
             const random = Math.random().toString(16).substring(2, 10);
@@ -76,7 +74,6 @@ export default {
             document.getElementById('uuid-output').value = '';
         };
         
-        // Generate one UUID on load
         setTimeout(() => generateUUIDs(), 100);
     }
 };

@@ -1,4 +1,4 @@
-// Base64 Encoder/Decoder Tool
+
 export default {
     title: 'Base64 Encoder/Decoder',
     html: `

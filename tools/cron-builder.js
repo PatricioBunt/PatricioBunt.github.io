@@ -1,4 +1,4 @@
-// Cron Expression Builder Tool
+
 export default {
     title: 'Cron Expression Builder',
     html: `

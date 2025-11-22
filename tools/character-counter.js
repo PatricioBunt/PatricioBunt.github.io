@@ -1,4 +1,4 @@
-// Character/Word Counter Tool
+
 export default {
     title: 'Character/Word Counter',
     html: `

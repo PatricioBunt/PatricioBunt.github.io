@@ -1,4 +1,4 @@
-// CSS Minifier/Beautifier Tool
+
 export default {
     title: 'CSS Minifier/Beautifier',
     html: `
@@ -25,7 +25,7 @@ export default {
         </div>
     `,
     init() {
-        // Implementation coming soon
+        
     }
 };
 

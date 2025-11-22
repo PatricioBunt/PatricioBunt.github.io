@@ -1,4 +1,4 @@
-// Browser Storage Viewer Tool
+
 export default {
     title: 'Storage Viewer',
     styles: `
@@ -429,11 +429,11 @@ export default {
         window.switchStorageTab = (tab) => {
             currentTab = tab;
             
-            // Update tabs
+            
             document.querySelectorAll('.storage-tab').forEach(t => t.classList.remove('active'));
             document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
             
-            // Update content
+            
             document.querySelectorAll('.storage-content').forEach(c => c.classList.remove('active'));
             document.getElementById(`${tab}-content`).classList.add('active');
             
@@ -483,7 +483,7 @@ export default {
             localStorage.clear();
             sessionStorage.clear();
             
-            // Clear cookies
+            
             document.cookie.split(';').forEach(cookie => {
                 const key = cookie.split('=')[0].trim();
                 document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
@@ -493,7 +493,6 @@ export default {
             ToolUtils.showNotification('All storage cleared', 2000);
         };
         
-        // Initialize
         renderCurrentTab();
     }
 };

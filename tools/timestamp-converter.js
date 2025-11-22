@@ -1,4 +1,4 @@
-// Unix Timestamp Converter Tool
+
 export default {
     title: 'Unix Timestamp Converter',
     html: `
@@ -42,7 +42,7 @@ export default {
                 return;
             }
             
-            // Check if it's in milliseconds or seconds
+            
             const date = timestamp > 9999999999 ? new Date(timestamp) : new Date(timestamp * 1000);
             output.value = date.toLocaleString();
             iso.value = date.toISOString();

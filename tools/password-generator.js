@@ -1,4 +1,4 @@
-// Password Generator Tool
+
 export default {
     title: 'Password Generator',
     html: `
@@ -80,7 +80,6 @@ export default {
             }
         };
         
-        // Generate on load
         setTimeout(() => generatePassword(), 100);
     }
 };

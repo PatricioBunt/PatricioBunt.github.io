@@ -1,4 +1,4 @@
-// Case Converter Tool
+
 export default {
     title: 'Case Converter',
     html: `

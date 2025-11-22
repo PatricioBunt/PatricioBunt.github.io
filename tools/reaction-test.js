@@ -1,4 +1,4 @@
-// Reaction Time Test Tool
+
 export default {
     title: 'Reaction Time Test',
     styles: `
@@ -177,7 +177,7 @@ export default {
     init() {
         const STORAGE_KEY = 'reaction_test_history';
         let times = [];
-        let state = 'waiting'; // waiting, ready, clicked
+        let state = 'waiting'; 
         let readyTime = null;
         let clickTime = null;
         let timeoutId = null;
@@ -263,7 +263,7 @@ export default {
         
         function handleReactionClick() {
             if (state === 'waiting') {
-                // Start the test - wait random time before showing green
+                
                 state = 'ready';
                 const screen = document.getElementById('reaction-screen');
                 const message = document.getElementById('reaction-message');
@@ -271,26 +271,26 @@ export default {
                 screen.className = 'reaction-screen waiting';
                 message.textContent = 'Wait for green...';
                 
-                // Random delay between 1-5 seconds
+                
                 const delay = Math.random() * 4000 + 1000;
                 
                 timeoutId = setTimeout(() => {
                     readyTime = Date.now();
-                    // Change immediately without animation
+                    
                     screen.style.transition = 'none';
                     screen.className = 'reaction-screen ready';
                     message.textContent = 'CLICK NOW!';
-                    // Re-enable transition after a brief moment
+                    
                     setTimeout(() => {
                         screen.style.transition = '';
                     }, 10);
                 }, delay);
             } else if (state === 'ready') {
-                // User clicked - calculate reaction time
+                
                 clickTime = Date.now();
                 const reactionTime = clickTime - readyTime;
                 
-                // Prevent false starts (clicked too early)
+                
                 if (reactionTime < 50) {
                     const screen = document.getElementById('reaction-screen');
                     const message = document.getElementById('reaction-message');
@@ -318,7 +318,7 @@ export default {
                 
                 state = 'waiting';
                 
-                // Auto start new test after 2 seconds
+                
                 setTimeout(() => {
                     startNewTest();
                 }, 2000);
@@ -339,7 +339,6 @@ export default {
             }
         };
         
-        // Initialize
         loadHistory();
         startNewTest();
     }

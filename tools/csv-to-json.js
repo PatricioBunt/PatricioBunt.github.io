@@ -1,4 +1,4 @@
-// CSV to JSON Converter Tool
+
 export default {
     title: 'CSV to JSON',
     html: `

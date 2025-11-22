@@ -1,4 +1,4 @@
-// Device & IP Info Tool
+
 export default {
     title: 'Device & IP Info',
     styles: `
@@ -231,7 +231,7 @@ export default {
         let locationData = null;
         
         function updateDeviceInfo() {
-            // Device Information
+            
             document.getElementById('user-agent').textContent = navigator.userAgent;
             document.getElementById('platform').textContent = navigator.platform || 'Unknown';
             document.getElementById('language').textContent = navigator.language || navigator.userLanguage || 'Unknown';
@@ -241,7 +241,7 @@ export default {
             document.getElementById('pixel-ratio').textContent = window.devicePixelRatio || '1';
             document.getElementById('online-status').textContent = navigator.onLine ? 'Online' : 'Offline';
             
-            // Browser Features
+            
             document.getElementById('cookies-enabled').textContent = navigator.cookieEnabled ? 'Enabled' : 'Disabled';
             document.getElementById('local-storage').textContent = typeof(Storage) !== 'undefined' ? 'Available' : 'Not Available';
             document.getElementById('session-storage').textContent = typeof(sessionStorage) !== 'undefined' ? 'Available' : 'Not Available';
@@ -344,12 +344,10 @@ export default {
             ToolUtils.showNotification('All information copied to clipboard', 2000);
         };
         
-        // Initialize
         updateDeviceInfo();
         fetchIPInfo();
         getLocation();
         
-        // Listen for online/offline changes
         window.addEventListener('online', () => {
             document.getElementById('online-status').textContent = 'Online';
         });

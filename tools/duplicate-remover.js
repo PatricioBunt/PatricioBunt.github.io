@@ -1,4 +1,4 @@
-// Duplicate Line Remover Tool
+
 export default {
     title: 'Duplicate Line Remover',
     html: `

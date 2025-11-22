@@ -1,4 +1,4 @@
-// URL Encoder/Decoder Tool
+
 export default {
     title: 'URL Encoder/Decoder',
     html: `

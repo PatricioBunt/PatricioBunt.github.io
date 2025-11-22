@@ -1,4 +1,4 @@
-// Task List Tool (uses localStorage)
+
 export default {
     title: 'Task List',
     styles: `
@@ -183,10 +183,9 @@ export default {
     init() {
         const STORAGE_KEY = 'toolkit_tasks';
         
-        // Load tasks from localStorage
         function loadTasks() {
             const tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            // Migrate old tasks without status
+            
             tasks.forEach(task => {
                 if (!task.status) {
                     task.status = task.completed ? 'done' : 'todo';
@@ -196,14 +195,12 @@ export default {
             return tasks;
         }
         
-        // Save tasks to localStorage
         function saveTasks(tasks) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-            // Trigger custom event for kanban board sync (same window)
+            
             window.dispatchEvent(new CustomEvent('tasksUpdated'));
         }
         
-        // Render tasks
         function renderTasks(tasks) {
             const taskList = document.getElementById('task-list');
             const totalEl = document.getElementById('task-total');
@@ -224,7 +221,6 @@ export default {
                 return;
             }
             
-            // Sort: todo first, then in-progress, then done
             const sortedTasks = [...tasks].sort((a, b) => {
                 const order = { 'todo': 0, 'in-progress': 1, 'done': 2 };
                 return (order[a.status] || 0) - (order[b.status] || 0);
@@ -251,7 +247,6 @@ export default {
                 `;
             }).join('');
             
-            // Set indeterminate state for checkboxes after render
             setTimeout(() => {
                 taskList.querySelectorAll('.task-checkbox[data-indeterminate="true"]').forEach(checkbox => {
                     checkbox.indeterminate = true;
@@ -286,7 +281,7 @@ export default {
         window.toggleTask = (index) => {
             const tasks = loadTasks();
             const task = tasks[index];
-            // Cycle: todo -> in-progress -> done -> todo
+            
             if (task.status === 'todo') {
                 task.status = 'in-progress';
                 task.completed = false;
@@ -294,7 +289,7 @@ export default {
                 task.status = 'done';
                 task.completed = true;
             } else {
-                // done -> todo
+                
                 task.status = 'todo';
                 task.completed = false;
             }
@@ -326,12 +321,10 @@ export default {
             }
         };
         
-        // Listen for storage changes (from kanban board)
         window.addEventListener('storage', () => {
             loadTasks();
         });
         
-        // Also listen for custom event (same window)
         window.addEventListener('tasksUpdated', () => {
             loadTasks();
         });
@@ -346,7 +339,6 @@ export default {
             }
         };
         
-        // Initialize
         loadTasks();
     }
 };

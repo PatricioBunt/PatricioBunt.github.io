@@ -1,4 +1,4 @@
-// Kanban Board Tool (uses localStorage)
+
 export default {
     title: 'Kanban Board',
     styles: `
@@ -246,10 +246,9 @@ export default {
         const STORAGE_KEY = 'toolkit_tasks';
         let draggedCard = null;
         
-        // Load tasks from localStorage (shared with task list)
         function loadTasks() {
             const tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            // Migrate old tasks without status
+            
             tasks.forEach(task => {
                 if (!task.status) {
                     task.status = task.completed ? 'done' : 'todo';
@@ -258,7 +257,6 @@ export default {
             return tasks;
         }
         
-        // Convert tasks to board structure
         function tasksToBoard(tasks) {
             return {
                 'todo': tasks.filter(t => t.status === 'todo'),
@@ -267,14 +265,12 @@ export default {
             };
         }
         
-        // Save tasks to localStorage
         function saveTasks(tasks) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-            // Trigger custom event for task list sync
+            
             window.dispatchEvent(new CustomEvent('tasksUpdated'));
         }
         
-        // Render board
         function renderBoard() {
             const tasks = loadTasks();
             const board = tasksToBoard(tasks);
@@ -343,7 +339,7 @@ export default {
                 return;
             }
             
-            // Update task status
+            
             task.status = targetColumn;
             task.completed = targetColumn === 'done';
             
@@ -396,12 +392,10 @@ export default {
             }
         };
         
-        // Listen for storage changes (from task list)
         window.addEventListener('storage', () => {
             renderBoard();
         });
         
-        // Also listen for custom event (same window)
         window.addEventListener('tasksUpdated', () => {
             renderBoard();
         });
@@ -416,7 +410,6 @@ export default {
             }
         };
         
-        // Initialize
         renderBoard();
     }
 };

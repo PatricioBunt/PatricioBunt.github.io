@@ -1,4 +1,4 @@
-// Chimp Test Tool
+
 export default {
     title: 'Chimp Test',
     styles: `
@@ -216,13 +216,13 @@ export default {
             isShowingSequence = true;
             const cells = document.querySelectorAll('.chimp-cell');
             
-            // Hide all numbers
+            
             cells.forEach(cell => {
                 cell.classList.add('hidden');
                 cell.classList.remove('correct', 'incorrect');
             });
             
-            // Show sequence one by one
+            
             sequence.forEach((num, index) => {
                 setTimeout(() => {
                     const cell = cells[num - 1];
@@ -234,13 +234,13 @@ export default {
                 }, index * 800);
             });
             
-            // After showing sequence, wait for user input
+            
             setTimeout(() => {
                 isShowingSequence = false;
                 isWaitingForInput = true;
                 userSequence = [];
                 
-                // Show all numbers
+                
                 cells.forEach(cell => {
                     cell.classList.remove('hidden');
                 });
@@ -257,13 +257,13 @@ export default {
             const expectedIndex = userSequence.length - 1;
             
             if (num === sequence[expectedIndex]) {
-                // Correct
+                
                 cell.classList.add('correct');
                 cell.classList.remove('incorrect');
                 
-                // Check if sequence complete
+                
                 if (userSequence.length === sequence.length) {
-                    // Level complete!
+                    
                     score += currentLevel * 10;
                     document.getElementById('score').textContent = score;
                     
@@ -275,11 +275,11 @@ export default {
                     }, 1000);
                 }
             } else {
-                // Incorrect
+                
                 cell.classList.add('incorrect');
                 isWaitingForInput = false;
                 
-                // Game over
+                
                 setTimeout(() => {
                     alert(`Game Over!\n\nLevel Reached: ${currentLevel}\nScore: ${score}\n\nYour best: Level ${bestLevel}`);
                     resetGame();
@@ -328,7 +328,6 @@ export default {
         window.startGame = startGame;
         window.resetGame = resetGame;
         
-        // Initialize
         loadBest();
         createGrid();
     }

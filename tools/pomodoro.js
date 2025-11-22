@@ -1,4 +1,4 @@
-// Pomodoro Timer Tool
+
 export default {
     title: 'Pomodoro Timer',
     styles: `
@@ -161,14 +161,13 @@ export default {
         const STATS_KEY = 'pomodoro_stats';
         
         let timerInterval = null;
-        let timeLeft = 25 * 60; // 25 minutes in seconds
+        let timeLeft = 25 * 60;
         let isRunning = false;
         let isWorkTime = true;
         let startTime = null;
         let pausedTime = null;
         let notificationPermission = 'default';
         
-        // Load saved state
         function loadState() {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
@@ -176,7 +175,7 @@ export default {
                     const state = JSON.parse(saved);
                     timeLeft = state.timeLeft || 25 * 60;
                     isWorkTime = state.isWorkTime !== false;
-                    isRunning = false; // Don't auto-resume
+                    isRunning = false;
                     updateDisplay();
                 } catch (e) {
                     console.error('Failed to load timer state:', e);
@@ -191,7 +190,6 @@ export default {
             }
         }
         
-        // Save state
         function saveState() {
             const state = {
                 timeLeft,
@@ -201,7 +199,6 @@ export default {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         }
         
-        // Load stats
         function loadStats() {
             const stats = JSON.parse(localStorage.getItem(STATS_KEY) || '{"sessions": 0, "workTime": 0, "breakTime": 0}');
             document.getElementById('sessions-completed').textContent = stats.sessions || 0;
@@ -210,12 +207,10 @@ export default {
             return stats;
         }
         
-        // Save stats
         function saveStats(stats) {
             localStorage.setItem(STATS_KEY, JSON.stringify(stats));
         }
         
-        // Format time for stats
         function formatTime(minutes) {
             if (minutes < 60) return `${minutes}m`;
             const hours = Math.floor(minutes / 60);
@@ -223,14 +218,13 @@ export default {
             return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
         }
         
-        // Update display
         function updateDisplay() {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
             document.getElementById('timer-display').textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
-            // Update page title
+            
             if (isRunning) {
                 document.title = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} - ${isWorkTime ? 'Work' : 'Break'} | Pomodoro Timer`;
             } else {
@@ -238,7 +232,6 @@ export default {
             }
         }
         
-        // Update input states
         function updateInputStates() {
             const workInput = document.getElementById('work-duration');
             const breakInput = document.getElementById('break-duration');
@@ -256,7 +249,6 @@ export default {
             }
         }
         
-        // Update status display
         function updateStatus() {
             const statusEl = document.getElementById('timer-status');
             statusEl.className = 'pomodoro-status';
@@ -271,7 +263,6 @@ export default {
             }
         }
         
-        // Send notification via service worker
         function sendNotification(title, body, isWorkTime) {
             if ('serviceWorker' in navigator && 'Notification' in window) {
                 if (notificationPermission === 'granted') {
@@ -283,7 +274,6 @@ export default {
                             isWorkTime: isWorkTime
                         });
                     }).catch(() => {
-                        // Fallback to Web Notification API
                         new Notification(title, {
                             body: body,
                             icon: '/web-app-manifest-192x192.png',
@@ -295,7 +285,6 @@ export default {
             }
         }
         
-        // Start timer
         function startTimer() {
             if (isRunning) return;
             
@@ -309,7 +298,6 @@ export default {
             updateInputStates();
             saveState();
             
-            // Use requestAnimationFrame for more accurate timing
             let lastUpdate = Date.now();
             
             function tick() {
@@ -331,7 +319,6 @@ export default {
                         clearInterval(timerInterval);
                         isRunning = false;
                         
-                        // Update stats
                         const stats = loadStats();
                         if (isWorkTime) {
                             const workDuration = parseInt(document.getElementById('work-duration').value) || 25;
@@ -344,7 +331,6 @@ export default {
                         saveStats(stats);
                         loadStats();
                         
-                        // Switch mode
                         if (isWorkTime) {
                             isWorkTime = false;
                             timeLeft = parseInt(document.getElementById('break-duration').value) * 60;
@@ -369,7 +355,6 @@ export default {
                         document.getElementById('start-btn').style.display = 'inline-block';
                         document.getElementById('pause-btn').style.display = 'none';
                         
-                        // Play notification sound
                         try {
                             const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKzn8LZjGwU7k9jzzHksBSV3yPDdkEAKFF606OuoVRQKRp/g8r5sIQUrgc7y2Yk2CBtpvfDknE4MDlCs5/C2YxsFO5PY88x5LAUld8jw3ZBAC');
                             audio.play().catch(() => {});
@@ -386,7 +371,6 @@ export default {
             tick();
         }
         
-        // Pause timer
         function pauseTimer() {
             if (!isRunning) return;
             
@@ -401,7 +385,6 @@ export default {
             saveState();
         }
         
-        // Reset timer
         function resetTimer() {
             clearTimeout(timerInterval);
             isRunning = false;
@@ -417,7 +400,6 @@ export default {
             saveState();
         }
         
-        // Update timer duration
         function updateTimerDuration() {
             if (isRunning) return;
             
@@ -427,7 +409,6 @@ export default {
             if (isWorkTime) {
                 timeLeft = workDuration * 60;
             } else {
-                // Only update if we're in break mode and not running
                 timeLeft = breakDuration * 60;
             }
             
@@ -435,14 +416,12 @@ export default {
             saveState();
         }
         
-        // Request notification permission
         window.requestNotificationPermission = async () => {
             if ('Notification' in window) {
                 const permission = await Notification.requestPermission();
                 notificationPermission = permission;
                 
                 if (permission === 'granted') {
-                    // Register service worker
                     if ('serviceWorker' in navigator) {
                         try {
                             const registration = await navigator.serviceWorker.register('/sw.js');
@@ -460,23 +439,19 @@ export default {
             }
         };
         
-        // Check notification permission
         if ('Notification' in window) {
             notificationPermission = Notification.permission;
             if (notificationPermission === 'default') {
                 document.getElementById('notification-permission').style.display = 'flex';
             } else if (notificationPermission === 'granted' && 'serviceWorker' in navigator) {
-                // Register service worker if permission already granted
                 navigator.serviceWorker.register('/sw.js').catch(console.error);
             }
         }
         
-        // Register service worker on load
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(console.error);
         }
         
-        // Restore page title on visibility change
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && !isRunning) {
                 document.title = 'Pomodoro Timer - Developer Toolkit';

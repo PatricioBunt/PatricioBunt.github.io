@@ -1,4 +1,4 @@
-// Typing Test Tool
+
 export default {
     title: 'Typing Test',
     styles: `
@@ -178,8 +178,8 @@ export default {
         let currentText = '';
         let userInput = '';
         let startTime = null;
-        let testDuration = 15; // Start with 15s to match button
-        let timeLeft = 15; // Match testDuration
+        let testDuration = 15; 
+        let timeLeft = 15; 
         let timerInterval = null;
         let isTestActive = false;
         let correctChars = 0;
@@ -194,7 +194,6 @@ export default {
                         .map(s => s.trim())
                         .filter(s => s.length > 0);
                 } else {
-                    // Fallback to default sentences
                     SENTENCES = [
                         'The quick brown fox jumps over the lazy dog.',
                         'Pack my box with five dozen liquor jugs.',
@@ -212,12 +211,9 @@ export default {
         }
         
         function getRandomText() {
-            // Start with a random sentence
             let text = SENTENCES[Math.floor(Math.random() * SENTENCES.length)];
             
-            // Keep adding random sentences until we have enough text
-            // We'll generate enough for the duration, but the test will stop at the time limit
-            while (text.length < 500) { // Generate at least 500 chars to ensure enough text
+            while (text.length < 500) { 
                 const nextIndex = Math.floor(Math.random() * SENTENCES.length);
                 text += ' ' + SENTENCES[nextIndex];
             }
@@ -226,7 +222,6 @@ export default {
         }
         
         function getNextSentence() {
-            // Get a random next sentence (truly random each time)
             return SENTENCES[Math.floor(Math.random() * SENTENCES.length)];
         }
         
@@ -234,7 +229,6 @@ export default {
             const container = document.getElementById('typing-text');
             let html = '';
             
-            // Recalculate correct chars
             correctChars = 0;
             for (let i = 0; i < Math.min(userInput.length, currentText.length); i++) {
                 if (userInput[i] === currentText[i]) {
@@ -242,8 +236,6 @@ export default {
                 }
             }
             
-            // If test is active, continuously add more sentences as user types
-            // Keep adding sentences when user is within 50 characters of the end
             if (isTestActive && userInput.length >= currentText.length - 50) {
                 const nextSentence = getNextSentence();
                 currentText += ' ' + nextSentence;
@@ -253,19 +245,15 @@ export default {
                 const char = currentText[i];
                 let className = 'typing-char';
                 
-                // Check if this character has been typed
                 if (i < userInput.length) {
-                    // Character has been typed - check if correct
                     if (char === userInput[i]) {
                         className += ' correct';
                     } else {
                         className += ' incorrect';
                     }
                 } else if (i === userInput.length) {
-                    // This is the current character to type (next one)
                     className += ' current';
-                } else {
-                    // Not yet typed
+                } else { 
                     className += ' pending';
                 }
                 
@@ -274,7 +262,6 @@ export default {
             
             container.innerHTML = html;
             
-            // Scroll to current character
             const currentChar = container.querySelector('.current');
             if (currentChar) {
                 currentChar.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -305,16 +292,14 @@ export default {
             
             isTestActive = true;
             startTime = Date.now();
-            // userInput already has the first character from the input event
             correctChars = 0;
-            totalChars = userInput.length; // Set totalChars to current input length
+            totalChars = userInput.length; 
             timeLeft = testDuration;
             
             const input = document.getElementById('typing-input');
             input.disabled = false;
             input.focus();
             
-            // Start timer
             timerInterval = setInterval(() => {
                 timeLeft--;
                 document.getElementById('time').textContent = timeLeft + 's';
@@ -324,7 +309,6 @@ export default {
                 }
             }, 1000);
             
-            // Render immediately to show the first character correctly
             renderText();
             updateStats();
         }
@@ -341,14 +325,11 @@ export default {
             const finalWpm = Math.round((userInput.length / 5) / minutes) || 0;
             const finalAccuracy = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;
             
-            // Show results briefly
             const message = `Test Complete!\n\nWPM: ${finalWpm}\nAccuracy: ${finalAccuracy}%\nCharacters: ${userInput.length}\n\nPress Enter for a new test`;
             ToolUtils.showNotification(message, 3000);
         }
         
         function checkTextCompletion() {
-            // During active test, continuously add more sentences as user approaches the end
-            // Check more aggressively to ensure text never runs out
             if (isTestActive && userInput.length >= currentText.length - 50) {
                 const nextSentence = getNextSentence();
                 currentText += ' ' + nextSentence;
@@ -356,7 +337,6 @@ export default {
         }
         
         function prepareNewTest() {
-            // Reset all test state
             isTestActive = false;
             userInput = '';
             startTime = null;
@@ -364,34 +344,31 @@ export default {
             totalChars = 0;
             timeLeft = testDuration;
             
-            // Clear any existing timer
             if (timerInterval) {
                 clearInterval(timerInterval);
                 timerInterval = null;
             }
-            
-            // Generate new random text
+
             if (SENTENCES.length > 0) {
                 currentText = getRandomText();
             } else {
                 currentText = 'Loading sentences...';
             }
             
-            // Reset UI
             const input = document.getElementById('typing-input');
             input.value = '';
             input.disabled = false;
             
-            // Reset stats display
+            
             document.getElementById('wpm').textContent = '0';
             document.getElementById('accuracy').textContent = '100%';
             document.getElementById('time').textContent = testDuration + 's';
             document.getElementById('chars').textContent = '0';
             
-            // Render the text so it's visible
+            
             renderText();
             
-            // Auto-focus the input so user can start typing immediately
+            
             setTimeout(() => {
                 input.focus();
             }, 100);
@@ -426,51 +403,39 @@ export default {
         
         window.newTest = newTest;
         
-        // Input handler
         const input = document.getElementById('typing-input');
         input.addEventListener('input', (e) => {
-            // Update userInput first
             userInput = e.target.value;
             totalChars = userInput.length;
-            
-            // Auto-start test on first character (but don't reset userInput)
+             
             if (!isTestActive && userInput.length > 0) {
-                startTest();
-                // After starting, render immediately with the current input
+                startTest(); 
                 renderText();
                 updateStats();
-                return; // Don't render again below
+                return; 
             }
-            
-            // Add more text if user is getting close to the end
+             
             checkTextCompletion();
-            
-            // Render with updated input
+             
             renderText();
             updateStats();
         });
         
-        // Prevent backspace from going back when input is empty
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Backspace' && input.value === '') {
                 e.preventDefault();
             }
         });
         
-        // Handle Enter key at document level to start a new test
-        // This works even when the input loses focus after test ends
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                // Always allow Enter to start a new test
-                // newTest() will handle ending active tests with a confirm dialog
+            if (e.key === 'Enter') { 
                 e.preventDefault();
                 newTest();
             }
         });
         
-        // Initialize
         loadSentences().then(() => {
-            prepareNewTest(); // Use prepareNewTest to show text before starting
+            prepareNewTest();  
         });
     }
 };

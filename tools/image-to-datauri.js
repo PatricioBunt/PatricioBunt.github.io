@@ -1,4 +1,4 @@
-// Image to Data URI Converter Tool
+
 export default {
     title: 'Image to Data URI',
     html: `

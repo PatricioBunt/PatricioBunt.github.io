@@ -1,4 +1,4 @@
-// Diff Checker Tool
+
 export default {
     title: 'Diff Checker',
     styles: `
@@ -389,26 +389,22 @@ export default {
         </div>
     `,
     init() {
-        // Helper function to convert hex to rgba
         function hexToRgba(hex, alpha) {
-            if (!hex || !hex.startsWith('#')) return `rgba(0, 122, 204, ${alpha})`; // fallback
+            if (!hex || !hex.startsWith('#')) return `rgba(0, 122, 204, ${alpha})`; 
             const r = parseInt(hex.slice(1, 3), 16);
             const g = parseInt(hex.slice(3, 5), 16);
             const b = parseInt(hex.slice(5, 7), 16);
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
         
-        // Proper diff algorithm using longest common subsequence (LCS)
         function computeDiff(text1, text2) {
             const lines1 = text1.split('\n');
             const lines2 = text2.split('\n');
             
-            // Compute LCS using dynamic programming
             const m = lines1.length;
             const n = lines2.length;
             const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
             
-            // Build LCS table
             for (let i = 1; i <= m; i++) {
                 for (let j = 1; j <= n; j++) {
                     if (lines1[i - 1] === lines2[j - 1]) {
@@ -419,14 +415,12 @@ export default {
                 }
             }
             
-            // Backtrack to find the actual diff
             const diff = [];
             let i = m, j = n;
             let lineNum1 = m, lineNum2 = n;
             
             while (i > 0 || j > 0) {
                 if (i > 0 && j > 0 && lines1[i - 1] === lines2[j - 1]) {
-                    // Lines match
                     diff.unshift({
                         type: 'equal',
                         line1: lines1[i - 1],
@@ -437,7 +431,6 @@ export default {
                     i--;
                     j--;
                 } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-                    // Line added in text2
                     diff.unshift({
                         type: 'added',
                         line1: '',
@@ -447,7 +440,6 @@ export default {
                     });
                     j--;
                 } else if (i > 0 && (j === 0 || dp[i - 1][j] >= dp[i][j - 1])) {
-                    // Line removed from text1
                     diff.unshift({
                         type: 'removed',
                         line1: lines1[i - 1],
@@ -457,7 +449,6 @@ export default {
                     });
                     i--;
                 } else {
-                    // Modified line (shouldn't happen with LCS, but handle it)
                     diff.unshift({
                         type: 'modified',
                         line1: lines1[i - 1],
@@ -473,7 +464,6 @@ export default {
             return diff;
         }
         
-        // Character-level diff for highlighting within lines
         function computeCharDiff(str1, str2) {
             const result = [];
             let i = 0, j = 0;
@@ -490,7 +480,6 @@ export default {
                     i++;
                     j++;
                 } else {
-                    // Try to find next match
                     let found = false;
                     for (let k = j + 1; k < Math.min(j + 10, str2.length); k++) {
                         if (str1[i] === str2[k]) {
@@ -647,7 +636,7 @@ export default {
             
             let html = '<div class="diff-list-view">';
             
-            // Statistics
+            
             html += `
                 <div class="diff-stats">
                     <div class="diff-stat-item">
@@ -673,7 +662,7 @@ export default {
                 </div>
             `;
             
-            // Only in List 1
+            
             if (onlyIn1.length > 0) {
                 html += '<div class="diff-list-section"><h4 class="diff-section-title diff-removed-title">Only in List 1</h4><div class="diff-list-items">';
                 onlyIn1.forEach(item => {
@@ -682,7 +671,7 @@ export default {
                 html += '</div></div>';
             }
             
-            // Only in List 2
+            
             if (onlyIn2.length > 0) {
                 html += '<div class="diff-list-section"><h4 class="diff-section-title diff-added-title">Only in List 2</h4><div class="diff-list-items">';
                 onlyIn2.forEach(item => {
@@ -691,7 +680,7 @@ export default {
                 html += '</div></div>';
             }
             
-            // In both
+            
             if (inBoth.length > 0) {
                 html += '<div class="diff-list-section"><h4 class="diff-section-title diff-equal-title">In Both Lists</h4><div class="diff-list-items">';
                 inBoth.forEach(item => {
