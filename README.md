@@ -11,6 +11,9 @@ Live at [patriciobunt.com](https://patriciobunt.com)
 - Favorites system
 - Resizable sidebar
 - Service worker caching
+- Fullscreen mode for tools
+- Customizable default landing page
+- Toggle visibility of upcoming tools
 
 ## Tools
 
@@ -50,10 +53,12 @@ Live at [patriciobunt.com](https://patriciobunt.com)
 
 - Archive Manager
 - Color Picker
+- QR Code Generator & Scanner
 - Lorem Ipsum Generator
 - Password Generator
 - Pomodoro Timer
 - Keyboard Tester
+- EXIF Viewer & Editor
 
 ### Personal
 
