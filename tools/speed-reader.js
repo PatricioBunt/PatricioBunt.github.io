@@ -468,7 +468,6 @@ export default {
         const maxWPM = 1000;
         const wpmStep = 25;
         
-        // Elements
         const readerWord = document.getElementById('reader-word');
         const statusIndicator = document.getElementById('status-indicator');
         const statusText = document.getElementById('status-text');
@@ -478,19 +477,15 @@ export default {
         const fileUploadArea = document.getElementById('file-upload-area');
         const fileInput = document.getElementById('file-input');
         
-        // Load sample text initially
         const sampleText = "Welcome to the Speed Reader! This tool helps you read faster by showing one word at a time. Paste your own text below, or upload a text file to get started. You can control the reading speed using the buttons or keyboard shortcuts. Press Space to start reading, and use Left Alt to speed up or Left Ctrl to slow down. The reader will automatically pause briefly after sentences to give you time to process. Happy reading!";
         readerText.value = sampleText;
         loadText();
         
         function parseText(text) {
-            // Split by whitespace and filter out empty strings
             return text.split(/\s+/).filter(word => word.length > 0);
         }
         
         function getFocalPoint(word) {
-            // Calculate the optimal recognition point (ORP)
-            // Usually around 1/3 from the start for optimal recognition
             const len = word.length;
             if (len === 1) return 0;
             if (len === 2) return 0;
@@ -506,12 +501,10 @@ export default {
             
             const focalIndex = getFocalPoint(word);
             
-            // Split word into three parts: before focal, focal letter, after focal
             const before = word.slice(0, focalIndex);
             const focal = word[focalIndex];
             const after = word.slice(focalIndex + 1);
             
-            // Create HTML with three divs to keep focal letter in fixed position
             readerWord.innerHTML = `
                 <div class="word-before">${escapeHtml(before)}</div>
                 <div class="word-focal">${escapeHtml(focal)}</div>
@@ -526,17 +519,14 @@ export default {
         }
         
         function getDelayForWord(word) {
-            // Base delay from WPM
             let delay = 60000 / wpm;
             
-            // Add extra time for punctuation
             if (word.match(/[.!?;:]$/)) {
-                delay += 300; // Extra 300ms pause after sentence endings
+                delay += 300;
             } else if (word.match(/[,]$/)) {
-                delay += 150; // Extra 150ms pause after commas
+                delay += 150;
             }
             
-            // Longer words get slightly more time
             if (word.length > 8) {
                 delay += 100;
             }
@@ -710,7 +700,6 @@ export default {
             }
         }
         
-        // Progress bar click to seek
         progressBar.parentElement.addEventListener('click', (e) => {
             if (words.length === 0) return;
             
@@ -729,7 +718,6 @@ export default {
             ToolUtils.showNotification(`Jumped to word ${currentIndex + 1}`, 1000);
         });
         
-        // File upload area events
         fileUploadArea.addEventListener('click', () => {
             fileInput.click();
         });
@@ -760,36 +748,29 @@ export default {
             }
         });
         
-        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            // Only handle shortcuts when not typing in textarea
             if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
                 return;
             }
             
-            // Space - Play/Pause
             if (e.code === 'Space') {
                 e.preventDefault();
                 togglePlayPause();
             }
-            // Left Alt - Speed up
             else if (e.key === 'Alt' && e.location === 1) {
                 e.preventDefault();
                 increaseSpeed();
             }
-            // Left Control - Slow down
             else if (e.key === 'Control' && e.location === 1) {
                 e.preventDefault();
                 decreaseSpeed();
             }
-            // R - Reset
             else if (e.key === 'r' || e.key === 'R') {
                 e.preventDefault();
                 resetReader();
             }
         });
         
-        // Fullscreen functionality
         window.enterSpeedReaderFullscreen = () => {
             const app = window.toolkitApp;
             if (!app) return;
@@ -800,7 +781,6 @@ export default {
             }
         };
         
-        // Global functions
         window.togglePlayPause = togglePlayPause;
         window.resetReader = resetReader;
         window.loadText = loadText;
@@ -809,7 +789,6 @@ export default {
         window.handleFileSelect = handleFileSelect;
         window.loadBook = loadBook;
         
-        // Initialize display
         updateStats();
     }
 };

@@ -378,13 +378,11 @@ export default {
         function handleKeyPress(key) {
             if (key === 'ENTER') {
                 if (gameOver) {
-                    // Allow Enter to start a new game when game is over
                     newGame();
                     return;
                 }
                 submitGuess();
             } else if (gameOver) {
-                // Don't process other keys when game is over
                 return;
             } else if (key === 'BACKSPACE') {
                 if (currentCell > 0) {
@@ -553,14 +551,11 @@ export default {
         
         window.newGame = newGame;
         
-        // Remove any existing keyboard handler to prevent duplicates
         if (window._wordleKeyboardHandler) {
             document.removeEventListener('keydown', window._wordleKeyboardHandler);
         }
         
-        // Create new keyboard handler
         keyboardHandler = (e) => {
-            // Don't process keys if user is typing in an input field
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
                 return;
             }
@@ -579,7 +574,6 @@ export default {
             }
         };
         
-        // Store handler reference globally so we can remove it later
         window._wordleKeyboardHandler = keyboardHandler;
         document.addEventListener('keydown', keyboardHandler);
         
