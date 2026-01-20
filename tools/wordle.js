@@ -229,6 +229,7 @@ export default {
         let currentCell = 0;
         let gameOver = false;
         let stats = { games: 0, wins: 0, streak: 0, bestStreak: 0 };
+        let keyboardHandler = null;
         
         async function loadWordLists() {
             
@@ -375,10 +376,16 @@ export default {
         }
         
         function handleKeyPress(key) {
-            if (gameOver) return;
-            
             if (key === 'ENTER') {
+                if (gameOver) {
+                    // Allow Enter to start a new game when game is over
+                    newGame();
+                    return;
+                }
                 submitGuess();
+            } else if (gameOver) {
+                // Don't process other keys when game is over
+                return;
             } else if (key === 'BACKSPACE') {
                 if (currentCell > 0) {
                     currentCell--;
@@ -546,17 +553,35 @@ export default {
         
         window.newGame = newGame;
         
-        document.addEventListener('keydown', (e) => {
+        // Remove any existing keyboard handler to prevent duplicates
+        if (window._wordleKeyboardHandler) {
+            document.removeEventListener('keydown', window._wordleKeyboardHandler);
+        }
+        
+        // Create new keyboard handler
+        keyboardHandler = (e) => {
+            // Don't process keys if user is typing in an input field
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                return;
+            }
+            
             if (gameOver && e.key !== 'Enter') return;
             
             if (e.key === 'Enter') {
+                e.preventDefault();
                 handleKeyPress('ENTER');
             } else if (e.key === 'Backspace') {
+                e.preventDefault();
                 handleKeyPress('BACKSPACE');
             } else if (/^[a-zA-Z]$/.test(e.key)) {
+                e.preventDefault();
                 handleKeyPress(e.key.toUpperCase());
             }
-        });
+        };
+        
+        // Store handler reference globally so we can remove it later
+        window._wordleKeyboardHandler = keyboardHandler;
+        document.addEventListener('keydown', keyboardHandler);
         
         loadWordLists().then(() => {
             loadStats();
