@@ -145,19 +145,50 @@ export default {
         .theme-light .json-null {
             color: #0000ff;
         }
+
+        .tool-section.json-formatter-section {
+            position: relative;
+        }
+
+        .json-processing-overlay {
+            position: absolute;
+            inset: 0;
+            background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+            border-radius: 4px;
+        }
+
+        .json-processing-overlay.visible {
+            display: flex;
+        }
+
+        .json-processing-overlay .json-processing-spinner {
+            font-size: 28px;
+            color: var(--accent-color);
+        }
+
+        .json-processing-overlay .json-processing-text {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
     `,
     html: `
         <div class="tool-info">
             <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
-            Format, validate, and minify JSON data. Paste your JSON below and use the buttons to format or minify it.
+            Format, validate, and minify JSON data. Paste your JSON below, drag and drop a .json file, or use the buttons to format or minify it.
         </div>
-        <div class="tool-section">
+        <div class="tool-section json-formatter-section" id="json-drop-zone">
             <div class="tool-input-group">
                 <label for="json-input">
                     <i class="fas fa-code" style="margin-right: 6px; color: var(--text-secondary);"></i>
                     JSON Input
                 </label>
-                <textarea id="json-input" placeholder='{"example": "paste your JSON here"}'></textarea>
+                <textarea id="json-input" placeholder='{"example": "paste your JSON here or drag a .json file"}'></textarea>
             </div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
                 <button class="tool-button" onclick="formatJSON()">
@@ -201,71 +232,102 @@ export default {
                 <div id="json-viewer" class="json-viewer" style="display: none;" data-fullscreen-target="true"></div>
                 <textarea id="json-output" readonly placeholder="Formatted JSON will appear here..." style="display: none; min-height: 200px;" data-fullscreen-target="true"></textarea>
             </div>
+            <div class="json-processing-overlay" id="json-processing-overlay" aria-live="polite">
+                <i class="fas fa-spinner fa-spin json-processing-spinner" aria-hidden="true"></i>
+                <span class="json-processing-text" id="json-processing-text">Processing...</span>
+            </div>
         </div>
     `,
     init() {
         let currentJSON = null;
         let isViewMode = true;
-        
-        function renderJSONViewer(jsonObj, container, level = 0) {
-            if (typeof jsonObj === 'object' && jsonObj !== null) {
-                if (Array.isArray(jsonObj)) {
+
+        const CHUNK_SIZE = 60;
+
+        function showProcessing(message) {
+            const overlay = document.getElementById('json-processing-overlay');
+            const textEl = document.getElementById('json-processing-text');
+            if (overlay) overlay.classList.add('visible');
+            if (textEl && message) textEl.textContent = message;
+        }
+
+        function hideProcessing() {
+            const overlay = document.getElementById('json-processing-overlay');
+            if (overlay) overlay.classList.remove('visible');
+        }
+
+        function renderPrimitive(value, container) {
+            const valueSpan = document.createElement('span');
+            valueSpan.className = typeof value === 'string' ? 'json-string' :
+                typeof value === 'number' ? 'json-number' :
+                    value === null ? 'json-null' : 'json-boolean';
+            const displayValue = typeof value === 'string' ? `"${value}"` :
+                value === null ? 'null' :
+                    value === true ? 'true' :
+                        value === false ? 'false' : value;
+            valueSpan.textContent = displayValue;
+            container.appendChild(valueSpan);
+        }
+
+        function renderNodeSync(item, container, level) {
+            if (typeof item === 'object' && item !== null) {
+                if (Array.isArray(item)) {
                     const arrayDiv = document.createElement('div');
                     arrayDiv.className = 'json-item';
-                    
                     const headerDiv = document.createElement('div');
                     headerDiv.style.display = 'flex';
                     headerDiv.style.alignItems = 'center';
                     headerDiv.style.marginBottom = '2px';
-                    
                     const toggle = document.createElement('span');
                     toggle.className = 'json-toggle';
-                    toggle.textContent = '▼';
+                    toggle.textContent = '▶';
                     toggle.style.cursor = 'pointer';
-                    
                     const bracket = document.createElement('span');
                     bracket.className = 'json-bracket';
                     bracket.textContent = '[';
                     bracket.style.marginRight = '4px';
-                    
                     const countSpan = document.createElement('span');
                     countSpan.style.color = 'var(--text-secondary)';
                     countSpan.style.fontSize = '11px';
                     countSpan.style.marginLeft = '8px';
-                    countSpan.textContent = `${jsonObj.length} ${jsonObj.length === 1 ? 'item' : 'items'}`;
-                    
+                    countSpan.textContent = `${item.length} ${item.length === 1 ? 'item' : 'items'}`;
                     const contentDiv = document.createElement('div');
                     contentDiv.className = 'json-content';
-                    contentDiv.style.display = 'block';
-                    
-                    jsonObj.forEach((item, index) => {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'json-item';
-                        itemDiv.style.paddingLeft = '8px';
-                        
-                        const indexSpan = document.createElement('span');
-                        indexSpan.className = 'json-key';
-                        indexSpan.textContent = `${index}: `;
-                        itemDiv.appendChild(indexSpan);
-                        renderJSONViewer(item, itemDiv, level + 1);
-                        contentDiv.appendChild(itemDiv);
-                    });
-                    
+                    contentDiv.style.display = 'none';
+                    contentDiv.dataset.lazy = '1';
+                    contentDiv._data = item;
+                    contentDiv._level = level;
                     const closeBracket = document.createElement('span');
                     closeBracket.className = 'json-bracket';
                     closeBracket.textContent = ']';
                     closeBracket.style.marginLeft = '4px';
-                    
                     toggle.onclick = () => {
                         const isExpanded = contentDiv.style.display !== 'none';
-                        toggle.textContent = isExpanded ? '▶' : '▼';
-                        contentDiv.style.display = isExpanded ? 'none' : 'block';
+                        if (isExpanded) {
+                            toggle.textContent = '▶';
+                            contentDiv.style.display = 'none';
+                        } else {
+                            if (contentDiv.dataset.lazy === '1') {
+                                contentDiv.dataset.lazy = '0';
+                                renderChildrenChunked(contentDiv, item, (i, c) => {
+                                    const itemDiv = document.createElement('div');
+                                    itemDiv.className = 'json-item';
+                                    itemDiv.style.paddingLeft = '8px';
+                                    const indexSpan = document.createElement('span');
+                                    indexSpan.className = 'json-key';
+                                    indexSpan.textContent = `${i}: `;
+                                    itemDiv.appendChild(indexSpan);
+                                    renderNodeSync(item[i], itemDiv, level + 1);
+                                    c.appendChild(itemDiv);
+                                });
+                            }
+                            toggle.textContent = '▼';
+                            contentDiv.style.display = 'block';
+                        }
                     };
-                    
                     headerDiv.appendChild(toggle);
                     headerDiv.appendChild(bracket);
                     headerDiv.appendChild(countSpan);
-                    
                     arrayDiv.appendChild(headerDiv);
                     arrayDiv.appendChild(contentDiv);
                     arrayDiv.appendChild(closeBracket);
@@ -273,78 +335,125 @@ export default {
                 } else {
                     const objDiv = document.createElement('div');
                     objDiv.className = 'json-item';
-                    
                     const headerDiv = document.createElement('div');
                     headerDiv.style.display = 'flex';
                     headerDiv.style.alignItems = 'center';
                     headerDiv.style.marginBottom = '2px';
-                    
                     const toggle = document.createElement('span');
                     toggle.className = 'json-toggle';
-                    toggle.textContent = '▼';
+                    toggle.textContent = '▶';
                     toggle.style.cursor = 'pointer';
-                    
                     const bracket = document.createElement('span');
                     bracket.className = 'json-bracket';
                     bracket.textContent = '{';
                     bracket.style.marginRight = '4px';
-                    
-                    const keys = Object.keys(jsonObj);
+                    const keys = Object.keys(item);
                     const countSpan = document.createElement('span');
                     countSpan.style.color = 'var(--text-secondary)';
                     countSpan.style.fontSize = '11px';
                     countSpan.style.marginLeft = '8px';
                     countSpan.textContent = `${keys.length} ${keys.length === 1 ? 'key' : 'keys'}`;
-                    
                     const contentDiv = document.createElement('div');
                     contentDiv.className = 'json-content';
-                    contentDiv.style.display = 'block';
-                    
-                    keys.forEach(key => {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'json-item';
-                        itemDiv.style.paddingLeft = '8px';
-                        
-                        const keySpan = document.createElement('span');
-                        keySpan.className = 'json-key';
-                        keySpan.textContent = `"${key}": `;
-                        itemDiv.appendChild(keySpan);
-                        renderJSONViewer(jsonObj[key], itemDiv, level + 1);
-                        contentDiv.appendChild(itemDiv);
-                    });
-                    
+                    contentDiv.style.display = 'none';
+                    contentDiv.dataset.lazy = '1';
+                    contentDiv._data = item;
+                    contentDiv._level = level;
                     const closeBracket = document.createElement('span');
                     closeBracket.className = 'json-bracket';
                     closeBracket.textContent = '}';
                     closeBracket.style.marginLeft = '4px';
-                    
                     toggle.onclick = () => {
                         const isExpanded = contentDiv.style.display !== 'none';
-                        toggle.textContent = isExpanded ? '▶' : '▼';
-                        contentDiv.style.display = isExpanded ? 'none' : 'block';
+                        if (isExpanded) {
+                            toggle.textContent = '▶';
+                            contentDiv.style.display = 'none';
+                        } else {
+                            if (contentDiv.dataset.lazy === '1') {
+                                contentDiv.dataset.lazy = '0';
+                                renderChildrenChunked(contentDiv, item, (key, c) => {
+                                    const itemDiv = document.createElement('div');
+                                    itemDiv.className = 'json-item';
+                                    itemDiv.style.paddingLeft = '8px';
+                                    const keySpan = document.createElement('span');
+                                    keySpan.className = 'json-key';
+                                    keySpan.textContent = `"${key}": `;
+                                    itemDiv.appendChild(keySpan);
+                                    renderNodeSync(item[key], itemDiv, level + 1);
+                                    c.appendChild(itemDiv);
+                                });
+                            }
+                            toggle.textContent = '▼';
+                            contentDiv.style.display = 'block';
+                        }
                     };
-                    
                     headerDiv.appendChild(toggle);
                     headerDiv.appendChild(bracket);
                     headerDiv.appendChild(countSpan);
-                    
                     objDiv.appendChild(headerDiv);
                     objDiv.appendChild(contentDiv);
                     objDiv.appendChild(closeBracket);
                     container.appendChild(objDiv);
                 }
             } else {
-                const valueSpan = document.createElement('span');
-                valueSpan.className = typeof jsonObj === 'string' ? 'json-string' : 
-                                     typeof jsonObj === 'number' ? 'json-number' :
-                                     jsonObj === null ? 'json-null' : 'json-boolean';
-                const displayValue = typeof jsonObj === 'string' ? `"${jsonObj}"` : 
-                                    jsonObj === null ? 'null' : 
-                                    jsonObj === true ? 'true' : 
-                                    jsonObj === false ? 'false' : 
-                                    jsonObj;
-                valueSpan.textContent = displayValue;
-                container.appendChild(valueSpan);
+                renderPrimitive(item, container);
+            }
+        }
+
+        function renderChildrenChunked(container, items, renderOne) {
+            const isArray = Array.isArray(items);
+            const entries = isArray ? items : Object.keys(items);
+            const total = entries.length;
+            if (total <= CHUNK_SIZE) {
+                for (let i = 0; i < total; i++) {
+                    const key = isArray ? i : entries[i];
+                    renderOne(key, container);
+                }
+                return;
+            }
+            let index = 0;
+            function chunk() {
+                const end = Math.min(index + CHUNK_SIZE, total);
+                for (; index < end; index++) {
+                    const key = isArray ? index : entries[index];
+                    renderOne(key, container);
+                }
+                if (index < total) {
+                    requestAnimationFrame(chunk);
+                }
+            }
+            requestAnimationFrame(chunk);
+        }
+
+        function renderJSONViewer(jsonObj, container, level = 0) {
+            if (typeof jsonObj === 'object' && jsonObj !== null) {
+                if (Array.isArray(jsonObj)) {
+                    renderChildrenChunked(container, jsonObj, (i, c) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'json-item';
+                        itemDiv.style.paddingLeft = '8px';
+                        const indexSpan = document.createElement('span');
+                        indexSpan.className = 'json-key';
+                        indexSpan.textContent = `${i}: `;
+                        itemDiv.appendChild(indexSpan);
+                        renderNodeSync(jsonObj[i], itemDiv, level + 1);
+                        c.appendChild(itemDiv);
+                    });
+                } else {
+                    renderChildrenChunked(container, jsonObj, (key, c) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'json-item';
+                        itemDiv.style.paddingLeft = '8px';
+                        const keySpan = document.createElement('span');
+                        keySpan.className = 'json-key';
+                        keySpan.textContent = `"${key}": `;
+                        itemDiv.appendChild(keySpan);
+                        renderNodeSync(jsonObj[key], itemDiv, level + 1);
+                        c.appendChild(itemDiv);
+                    });
+                }
+            } else {
+                renderPrimitive(jsonObj, container);
             }
         }
         
@@ -381,17 +490,22 @@ export default {
                 return;
             }
             
-            try {
-                const formatted = ToolUtils.formatJSON(input, 2);
-                output.value = formatted;
-                output.style.borderColor = 'var(--border-color)';
-                updateJSONView(formatted);
-                ToolUtils.showNotification('JSON formatted successfully!', 1500);
-            } catch (error) {
-                output.value = `Error: ${error.message}`;
-                output.style.borderColor = '#f48771';
-                viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${error.message}</div>`;
-            }
+            showProcessing('Formatting...');
+            requestAnimationFrame(() => {
+                try {
+                    const formatted = ToolUtils.formatJSON(input, 2);
+                    output.value = formatted;
+                    output.style.borderColor = 'var(--border-color)';
+                    updateJSONView(formatted);
+                    ToolUtils.showNotification('JSON formatted successfully!', 1500);
+                } catch (error) {
+                    output.value = `Error: ${error.message}`;
+                    output.style.borderColor = '#f48771';
+                    viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${error.message}</div>`;
+                } finally {
+                    hideProcessing();
+                }
+            });
         };
         
         window.minifyJSON = () => {
@@ -406,18 +520,23 @@ export default {
                 return;
             }
             
-            try {
-                const obj = JSON.parse(input);
-                const minified = JSON.stringify(obj);
-                output.value = minified;
-                output.style.borderColor = 'var(--border-color)';
-                updateJSONView(minified);
-                ToolUtils.showNotification('JSON minified successfully!', 1500);
-            } catch (error) {
-                output.value = `Error: ${error.message}`;
-                output.style.borderColor = '#f48771';
-                viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${error.message}</div>`;
-            }
+            showProcessing('Minifying...');
+            requestAnimationFrame(() => {
+                try {
+                    const obj = JSON.parse(input);
+                    const minified = JSON.stringify(obj);
+                    output.value = minified;
+                    output.style.borderColor = 'var(--border-color)';
+                    updateJSONView(minified);
+                    ToolUtils.showNotification('JSON minified successfully!', 1500);
+                } catch (error) {
+                    output.value = `Error: ${error.message}`;
+                    output.style.borderColor = '#f48771';
+                    viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${error.message}</div>`;
+                } finally {
+                    hideProcessing();
+                }
+            });
         };
         
         window.validateJSON = () => {
@@ -430,17 +549,22 @@ export default {
                 return;
             }
             
-            try {
-                JSON.parse(input);
-                output.value = '✓ Valid JSON';
-                output.style.borderColor = '#4ec9b0';
-                viewer.innerHTML = '<div class="json-viewer-success"><i class="fas fa-check-circle" style="margin-right: 8px;"></i>Valid JSON</div>';
-                ToolUtils.showNotification('JSON is valid!', 1500);
-            } catch (error) {
-                output.value = `✗ Invalid JSON: ${error.message}`;
-                output.style.borderColor = '#f48771';
-                viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-times-circle" style="margin-right: 8px;"></i>Invalid JSON: ${error.message}</div>`;
-            }
+            showProcessing('Validating...');
+            requestAnimationFrame(() => {
+                try {
+                    JSON.parse(input);
+                    output.value = '✓ Valid JSON';
+                    output.style.borderColor = '#4ec9b0';
+                    viewer.innerHTML = '<div class="json-viewer-success"><i class="fas fa-check-circle" style="margin-right: 8px;"></i>Valid JSON</div>';
+                    ToolUtils.showNotification('JSON is valid!', 1500);
+                } catch (error) {
+                    output.value = `✗ Invalid JSON: ${error.message}`;
+                    output.style.borderColor = '#f48771';
+                    viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-times-circle" style="margin-right: 8px;"></i>Invalid JSON: ${error.message}</div>`;
+                } finally {
+                    hideProcessing();
+                }
+            });
         };
         
         window.clearJSON = () => {
@@ -514,6 +638,47 @@ export default {
                 ToolUtils.showNotification('No JSON output to display in fullscreen');
             }
         };
+
+        const dropZone = document.getElementById('json-drop-zone');
+        const jsonInput = document.getElementById('json-input');
+        if (dropZone && jsonInput) {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const file = e.dataTransfer?.files?.[0];
+                if (!file) return;
+                const name = (file.name || '').toLowerCase();
+                if (!name.endsWith('.json') && !file.type.includes('json')) {
+                    ToolUtils.showNotification('Please drop a .json file');
+                    return;
+                }
+                showProcessing('Loading file...');
+                const reader = new FileReader();
+                reader.onload = () => {
+                    requestAnimationFrame(() => {
+                        try {
+                            const text = typeof reader.result === 'string' ? reader.result : '';
+                            showProcessing('Processing file...');
+                            jsonInput.value = text;
+                            hideProcessing();
+                            ToolUtils.showNotification('File loaded. Click Format or Validate.', 2000);
+                        } catch (err) {
+                            hideProcessing();
+                            ToolUtils.showNotification('Failed to read file: ' + (err.message || 'Unknown error'));
+                        }
+                    });
+                };
+                reader.onerror = () => {
+                    hideProcessing();
+                    ToolUtils.showNotification('Failed to read file');
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
     }
 };
 
