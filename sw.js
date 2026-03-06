@@ -1,5 +1,8 @@
-const CACHE_NAME = 'patricio-bunt-toolkit';
-const STATIC_CACHE = 'patricio-bunt-toolkit-static';
+// Bump VERSION whenever you deploy changes so users get fresh assets immediately.
+// Old caches with a different version are automatically deleted on activate.
+const VERSION = 'v4';
+const CACHE_NAME = `patricio-bunt-toolkit-${VERSION}`;
+const STATIC_CACHE = `patricio-bunt-toolkit-static-${VERSION}`;
 
 self.addEventListener('install', (event) => {
     event.waitUntil(

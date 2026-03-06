@@ -181,6 +181,7 @@ export default {
         <div class="tool-info">
             <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
             Format, validate, and minify JSON data. Paste your JSON below, drag and drop a .json file, or use the buttons to format or minify it.
+            <br><strong>Size limits:</strong> Formatting and minify run in a background thread so large files don't freeze the page. Formatted output is always shown as text. Tree view is disabled for output over 2 MB. When using the tree, the root shows at most 2,500 nodes and each expanded node at most 5,000 children (with a “… N more” summary).
         </div>
         <div class="tool-section json-formatter-section" id="json-drop-zone">
             <div class="tool-input-group">
@@ -221,7 +222,7 @@ export default {
                         </button>
                         <button class="tool-button secondary" onclick="toggleJSONView()" id="toggle-view-btn" style="padding: 6px 12px; font-size: 12px; margin: 0;">
                             <i class="fas fa-eye" style="margin-right: 4px;"></i>
-                            <span id="toggle-view-text">Tree View</span>
+                            <span id="toggle-view-text">Raw Text</span>
                         </button>
                         <button class="tool-button secondary" onclick="copyJSONOutput()" style="padding: 6px 12px; font-size: 12px; margin: 0;">
                             <i class="fas fa-copy" style="margin-right: 4px;"></i>
@@ -242,7 +243,76 @@ export default {
         let currentJSON = null;
         let isViewMode = true;
 
-        const CHUNK_SIZE = 60;
+        const CHUNK_SIZE = 120;
+        const ROOT_CAP = 2500;       // max root-level nodes to render (rest show "... N more")
+        const EXPAND_CAP = 5000;    // max children when expanding a node
+        const LARGE_OUTPUT_BYTES = 2 * 1024 * 1024; // 2MB - don't put in textarea, skip tree
+
+        let formatWorker = null;
+        let formatRequestId = 0;
+        let formatResolve = null;
+
+        function getWorker() {
+            if (formatWorker) return formatWorker;
+            try {
+                const workerUrl = new URL('./json-formatter-worker.js', import.meta.url);
+                formatWorker = new Worker(workerUrl);
+                formatWorker.onmessage = (e) => {
+                    const { id, ok, result, error } = e.data || {};
+                    if (formatResolve) {
+                        const fn = formatResolve;
+                        formatResolve = null;
+                        fn(ok ? { result } : { error: error || 'Unknown error' });
+                    }
+                };
+                formatWorker.onerror = () => {
+                    if (formatResolve) {
+                        const fn = formatResolve;
+                        formatResolve = null;
+                        fn({ error: 'Worker failed' });
+                    }
+                };
+            } catch (err) {
+                console.warn('JSON formatter worker unavailable:', err);
+            }
+            return formatWorker;
+        }
+
+        function formatViaWorker(jsonString, indent) {
+            return new Promise((resolve) => {
+                const w = getWorker();
+                if (!w) {
+                    try {
+                        const obj = JSON.parse(jsonString);
+                        resolve({ result: JSON.stringify(obj, null, indent ?? 2) });
+                    } catch (e) {
+                        resolve({ error: e.message });
+                    }
+                    return;
+                }
+                const id = ++formatRequestId;
+                formatResolve = resolve;
+                w.postMessage({ type: 'format', id, jsonString, indent });
+            });
+        }
+
+        function minifyViaWorker(jsonString) {
+            return new Promise((resolve) => {
+                const w = getWorker();
+                if (!w) {
+                    try {
+                        const obj = JSON.parse(jsonString);
+                        resolve({ result: JSON.stringify(obj) });
+                    } catch (e) {
+                        resolve({ error: e.message });
+                    }
+                    return;
+                }
+                const id = ++formatRequestId;
+                formatResolve = resolve;
+                w.postMessage({ type: 'minify', id, jsonString });
+            });
+        }
 
         function showProcessing(message) {
             const overlay = document.getElementById('json-processing-overlay');
@@ -319,7 +389,7 @@ export default {
                                     itemDiv.appendChild(indexSpan);
                                     renderNodeSync(item[i], itemDiv, level + 1);
                                     c.appendChild(itemDiv);
-                                });
+                                }, EXPAND_CAP);
                             }
                             toggle.textContent = '▼';
                             contentDiv.style.display = 'block';
@@ -381,7 +451,7 @@ export default {
                                     itemDiv.appendChild(keySpan);
                                     renderNodeSync(item[key], itemDiv, level + 1);
                                     c.appendChild(itemDiv);
-                                });
+                                }, EXPAND_CAP);
                             }
                             toggle.textContent = '▼';
                             contentDiv.style.display = 'block';
@@ -400,26 +470,48 @@ export default {
             }
         }
 
-        function renderChildrenChunked(container, items, renderOne) {
+        function renderChildrenChunked(container, items, renderOne, maxCount = Infinity) {
             const isArray = Array.isArray(items);
             const entries = isArray ? items : Object.keys(items);
             const total = entries.length;
-            if (total <= CHUNK_SIZE) {
-                for (let i = 0; i < total; i++) {
+            const capped = total > maxCount;
+            const toRender = capped ? maxCount : total;
+
+            if (toRender <= CHUNK_SIZE) {
+                for (let i = 0; i < toRender; i++) {
                     const key = isArray ? i : entries[i];
                     renderOne(key, container);
+                }
+                if (capped) {
+                    const more = total - maxCount;
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'json-item';
+                    placeholder.style.color = 'var(--text-secondary)';
+                    placeholder.style.fontStyle = 'italic';
+                    placeholder.style.paddingLeft = '20px';
+                    placeholder.textContent = `… and ${more.toLocaleString()} more (${total.toLocaleString()} total)`;
+                    container.appendChild(placeholder);
                 }
                 return;
             }
             let index = 0;
             function chunk() {
-                const end = Math.min(index + CHUNK_SIZE, total);
+                const end = Math.min(index + CHUNK_SIZE, toRender);
                 for (; index < end; index++) {
                     const key = isArray ? index : entries[index];
                     renderOne(key, container);
                 }
-                if (index < total) {
+                if (index < toRender) {
                     requestAnimationFrame(chunk);
+                } else if (capped) {
+                    const more = total - maxCount;
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'json-item';
+                    placeholder.style.color = 'var(--text-secondary)';
+                    placeholder.style.fontStyle = 'italic';
+                    placeholder.style.paddingLeft = '20px';
+                    placeholder.textContent = `… and ${more.toLocaleString()} more (${total.toLocaleString()} total)`;
+                    container.appendChild(placeholder);
                 }
             }
             requestAnimationFrame(chunk);
@@ -427,6 +519,7 @@ export default {
 
         function renderJSONViewer(jsonObj, container, level = 0) {
             if (typeof jsonObj === 'object' && jsonObj !== null) {
+                const rootCap = level === 0 ? ROOT_CAP : Infinity;
                 if (Array.isArray(jsonObj)) {
                     renderChildrenChunked(container, jsonObj, (i, c) => {
                         const itemDiv = document.createElement('div');
@@ -438,7 +531,7 @@ export default {
                         itemDiv.appendChild(indexSpan);
                         renderNodeSync(jsonObj[i], itemDiv, level + 1);
                         c.appendChild(itemDiv);
-                    });
+                    }, rootCap);
                 } else {
                     renderChildrenChunked(container, jsonObj, (key, c) => {
                         const itemDiv = document.createElement('div');
@@ -450,17 +543,22 @@ export default {
                         itemDiv.appendChild(keySpan);
                         renderNodeSync(jsonObj[key], itemDiv, level + 1);
                         c.appendChild(itemDiv);
-                    });
+                    }, rootCap);
                 }
             } else {
                 renderPrimitive(jsonObj, container);
             }
         }
         
+        function setTreeDisabledForLargeOutput() {
+            const viewer = document.getElementById('json-viewer');
+            viewer.innerHTML = `<div class="json-viewer-empty" style="padding: 20px;">Tree view is disabled for output over 2 MB to keep the page responsive. Use <strong>Raw Text</strong> (button above) to scroll the formatted JSON.</div>`;
+        }
+
         function updateJSONView(jsonString) {
             const viewer = document.getElementById('json-viewer');
             const output = document.getElementById('json-output');
-            
+
             if (isViewMode) {
                 viewer.style.display = 'block';
                 output.style.display = 'none';
@@ -491,20 +589,41 @@ export default {
             }
             
             showProcessing('Formatting...');
-            requestAnimationFrame(() => {
-                try {
-                    const formatted = ToolUtils.formatJSON(input, 2);
-                    output.value = formatted;
-                    output.style.borderColor = 'var(--border-color)';
-                    updateJSONView(formatted);
-                    ToolUtils.showNotification('JSON formatted successfully!', 1500);
-                } catch (error) {
-                    output.value = `Error: ${error.message}`;
+            formatViaWorker(input, 2).then(({ result, error }) => {
+                if (error) {
+                    output.value = `Error: ${error}`;
                     output.style.borderColor = '#f48771';
-                    viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${error.message}</div>`;
-                } finally {
+                    output.style.display = 'block';
+                    viewer.style.display = 'none';
+                    viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${error}</div>`;
                     hideProcessing();
+                    return;
                 }
+                output.value = result;
+                output.style.borderColor = 'var(--border-color)';
+                output.style.display = 'block';
+                if (result.length > LARGE_OUTPUT_BYTES) {
+                    currentJSON = null;
+                    setTreeDisabledForLargeOutput();
+                    viewer.style.display = 'none';
+                    isViewMode = false;
+                    document.getElementById('toggle-view-text').textContent = 'Tree View';
+                    document.getElementById('toggle-view-btn').querySelector('i').className = 'fas fa-code';
+                    ToolUtils.showNotification('Formatted. Tree view disabled for large output; use Raw Text to scroll.', 3000);
+                    hideProcessing();
+                    return;
+                }
+                showProcessing('Building tree...');
+                requestAnimationFrame(() => {
+                    try {
+                        updateJSONView(result);
+                        ToolUtils.showNotification('JSON formatted successfully!', 1500);
+                    } catch (e) {
+                        output.value = `Error: ${e.message}`;
+                        viewer.innerHTML = `<div class="json-viewer-error">${e.message}</div>`;
+                    }
+                    hideProcessing();
+                });
             });
         };
         
@@ -521,21 +640,41 @@ export default {
             }
             
             showProcessing('Minifying...');
-            requestAnimationFrame(() => {
-                try {
-                    const obj = JSON.parse(input);
-                    const minified = JSON.stringify(obj);
-                    output.value = minified;
-                    output.style.borderColor = 'var(--border-color)';
-                    updateJSONView(minified);
-                    ToolUtils.showNotification('JSON minified successfully!', 1500);
-                } catch (error) {
-                    output.value = `Error: ${error.message}`;
+            minifyViaWorker(input).then(({ result, error }) => {
+                if (error) {
+                    output.value = `Error: ${error}`;
                     output.style.borderColor = '#f48771';
-                    viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${error.message}</div>`;
-                } finally {
+                    output.style.display = 'block';
+                    viewer.style.display = 'none';
+                    viewer.innerHTML = `<div class="json-viewer-error"><i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${error}</div>`;
                     hideProcessing();
+                    return;
                 }
+                output.value = result;
+                output.style.borderColor = 'var(--border-color)';
+                output.style.display = 'block';
+                if (result.length > LARGE_OUTPUT_BYTES) {
+                    currentJSON = null;
+                    setTreeDisabledForLargeOutput();
+                    viewer.style.display = 'none';
+                    isViewMode = false;
+                    document.getElementById('toggle-view-text').textContent = 'Tree View';
+                    document.getElementById('toggle-view-btn').querySelector('i').className = 'fas fa-code';
+                    ToolUtils.showNotification('Minified. Tree view disabled for large output; use Raw Text to scroll.', 3000);
+                    hideProcessing();
+                    return;
+                }
+                showProcessing('Building tree...');
+                requestAnimationFrame(() => {
+                    try {
+                        updateJSONView(result);
+                        ToolUtils.showNotification('JSON minified successfully!', 1500);
+                    } catch (e) {
+                        output.value = `Error: ${e.message}`;
+                        viewer.innerHTML = `<div class="json-viewer-error">${e.message}</div>`;
+                    }
+                    hideProcessing();
+                });
             });
         };
         
@@ -570,6 +709,7 @@ export default {
         window.clearJSON = () => {
             document.getElementById('json-input').value = '';
             document.getElementById('json-output').value = '';
+            currentJSON = null;
             const viewer = document.getElementById('json-viewer');
             viewer.innerHTML = '';
             viewer.style.display = 'none';
@@ -579,13 +719,12 @@ export default {
         
         window.copyJSONOutput = () => {
             const output = document.getElementById('json-output');
-            const viewer = document.getElementById('json-viewer');
             const text = isViewMode && currentJSON ? JSON.stringify(currentJSON, null, 2) : output.value;
-            if (text) {
-                ToolUtils.copyToClipboard(text);
-            } else {
+            if (!text) {
                 ToolUtils.showNotification('No output to copy');
+                return;
             }
+            ToolUtils.copyToClipboard(text);
         };
         
         window.toggleJSONView = () => {
@@ -598,7 +737,7 @@ export default {
             
             if (isViewMode) {
                 toggleIcon.className = 'fas fa-eye';
-                toggleText.textContent = 'Tree View';
+                toggleText.textContent = 'Raw Text';
                 if (output.value) {
                     updateJSONView(output.value);
                 } else {
@@ -608,7 +747,7 @@ export default {
                 }
             } else {
                 toggleIcon.className = 'fas fa-code';
-                toggleText.textContent = 'Raw Text';
+                toggleText.textContent = 'Tree View';
                 viewer.style.display = 'none';
                 output.style.display = 'block';
             }

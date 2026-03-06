@@ -61,11 +61,18 @@ export default {
             }
             
             let password = '';
-            const array = new Uint8Array(length);
-            crypto.getRandomValues(array);
-            
-            for (let i = 0; i < length; i++) {
-                password += charset[array[i] % charset.length];
+            // Rejection sampling: discard bytes that would introduce modulo bias.
+            // Keeps only bytes in the largest multiple of charset.length that fits in 0–255.
+            const maxUnbiased = Math.floor(256 / charset.length) * charset.length;
+            while (password.length < length) {
+                const batch = new Uint8Array(Math.ceil((length - password.length) * 1.5));
+                crypto.getRandomValues(batch);
+                for (const byte of batch) {
+                    if (byte < maxUnbiased) {
+                        password += charset[byte % charset.length];
+                        if (password.length === length) break;
+                    }
+                }
             }
             
             document.getElementById('password-output').value = password;

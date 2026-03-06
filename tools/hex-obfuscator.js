@@ -243,9 +243,9 @@ export default {
             if (!line) return null;
             if (line.startsWith('#')) return null;
 
-            // IPv4: 1–4 decimal octets (0-255) – try first so "1.2.3.4" is not treated as decimal
+            // IPv4: exactly 4 decimal octets (0-255) – try first so "1.2.3.4" is not treated as decimal
             const ipv4Parts = line.split('.');
-            if (ipv4Parts.length >= 1 && ipv4Parts.length <= 4 && ipv4Parts.every(p => /^\d{1,3}$/.test(p))) {
+            if (ipv4Parts.length === 4 && ipv4Parts.every(p => /^\d{1,3}$/.test(p))) {
                 try {
                     const octets = ipv4Parts.map(x => {
                         const n = parseInt(x, 10);

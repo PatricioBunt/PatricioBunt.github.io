@@ -1013,33 +1013,6 @@ window.exitFullscreen = () => {
 
 window.ToolUtils = ToolUtils;
 
-function closeSettings() {
-    document.getElementById('settings-modal').style.display = 'none';
-}
-
-function closeHelp() {
-    document.getElementById('help-modal').style.display = 'none';
-}
-
-function clearFavorites() {
-    if (confirm('Are you sure you want to clear all favorites?')) {
-        window.toolkitApp.favorites = [];
-        window.toolkitApp.saveFavorites();
-        window.toolkitApp.showWelcomeScreen();
-    }
-}
-
-function resetSettings() {
-    if (confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
-        localStorage.removeItem('toolkit_settings');
-        window.toolkitApp.settings = window.toolkitApp.loadSettings();
-        window.toolkitApp.applySettings();
-        document.getElementById('theme-select').value = window.toolkitApp.settings.theme;
-        document.getElementById('accent-color').value = window.toolkitApp.settings.accentColor;
-        document.getElementById('default-landing').value = window.toolkitApp.settings.defaultLanding;
-    }
-}
-
 ToolkitApp.prototype.toggleFavoriteTool = function(toolName) {
     if (!toolName) {
         console.error('No toolName provided to toggleFavoriteTool');
@@ -1060,14 +1033,4 @@ ToolkitApp.prototype.toggleFavoriteTool = function(toolName) {
     this.updateLandingDropdown();
 };
 
-window.addEventListener('click', (e) => {
-    const settingsModal = document.getElementById('settings-modal');
-    const helpModal = document.getElementById('help-modal');
-    if (e.target === settingsModal) {
-        closeSettings();
-    }
-    if (e.target === helpModal) {
-        closeHelp();
-    }
-});
 
