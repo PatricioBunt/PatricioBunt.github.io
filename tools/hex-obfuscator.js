@@ -225,8 +225,7 @@ export default {
                 if (chunk.length === spec.size) {
                     result.push(spec.encode(chunk));
                     idx++;
-                } else if (chunk.length > 0) {
-                    // Remainder: use same formatter with partial chunk (matches Python; works with PowerShell strip-colons decode)
+                } else if (chunk.length > 0) { 
                     result.push(spec.encode(chunk));
                     idx++;
                 }
@@ -242,8 +241,7 @@ export default {
             line = line.trim();
             if (!line) return null;
             if (line.startsWith('#')) return null;
-
-            // IPv4: exactly 4 decimal octets (0-255) – try first so "1.2.3.4" is not treated as decimal
+ 
             const ipv4Parts = line.split('.');
             if (ipv4Parts.length === 4 && ipv4Parts.every(p => /^\d{1,3}$/.test(p))) {
                 try {
@@ -254,30 +252,26 @@ export default {
                     });
                     return octets.join('');
                 } catch (_) {
-                    // fall through
+                    
                 }
             }
-
-            // MAC: exactly 6 groups of 2 hex (try before IPv6 so "00:00:00:00:00:00" → 12 hex)
+ 
             const macRe = /^([0-9a-fA-F]{2}):([0-9a-fA-F]{2}):([0-9a-fA-F]{2}):([0-9a-fA-F]{2}):([0-9a-fA-F]{2}):([0-9a-fA-F]{2})$/;
             let m = line.match(macRe);
             if (m) return m.slice(1).join('').toLowerCase();
-
-            // IPv6: 1–8 groups of 1–4 hex (pad each to 4); remainder can be 7 groups e.g. 0000:0000:...:0000
+ 
             if (/^[0-9a-fA-F]{1,4}(?::[0-9a-fA-F]{1,4})*$/.test(line)) {
                 const groups = line.split(':');
                 if (groups.length >= 1 && groups.length <= 8) {
                     return groups.map(g => g.padStart(4, '0')).join('').toLowerCase();
                 }
             }
-
-            // UUID: 8-4-4-4-12
+ 
             const uuidRe = /^([0-9a-fA-F]{8})-([0-9a-fA-F]{4})-([0-9a-fA-F]{4})-([0-9a-fA-F]{4})-([0-9a-fA-F]{12})$/;
             m = line.match(uuidRe);
             if (m) return m.slice(1).join('').toLowerCase();
 
-            // Raw hex (0x...) – backwards compatibility; Python-style remainder uses formatters above
-            const rawHex = line.match(/^0x([0-9a-fA-F]+)$/);
+             const rawHex = line.match(/^0x([0-9a-fA-F]+)$/);
             if (rawHex) return rawHex[1].toLowerCase();
 
             return null;

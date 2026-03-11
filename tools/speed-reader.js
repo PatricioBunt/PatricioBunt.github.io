@@ -691,7 +691,7 @@ export default {
                 const text = await response.text();
                 readerText.value = text;
                 loadText();
-                select.value = ''; // Reset dropdown
+                select.value = ''; 
                 ToolUtils.showNotification(`Loaded: ${bookFile.replace('.txt', '')}`, 2000);
             } catch (error) {
                 console.error('Error loading book:', error);

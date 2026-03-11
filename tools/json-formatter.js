@@ -244,9 +244,9 @@ export default {
         let isViewMode = true;
 
         const CHUNK_SIZE = 120;
-        const ROOT_CAP = 2500;       // max root-level nodes to render (rest show "... N more")
-        const EXPAND_CAP = 5000;    // max children when expanding a node
-        const LARGE_OUTPUT_BYTES = 2 * 1024 * 1024; // 2MB - don't put in textarea, skip tree
+        const ROOT_CAP = 2500;      
+        const EXPAND_CAP = 5000;    
+        const LARGE_OUTPUT_BYTES = 2 * 1024 * 1024; 
 
         let formatWorker = null;
         let formatRequestId = 0;

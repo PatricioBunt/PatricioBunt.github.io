@@ -1,6 +1,5 @@
-// Bump VERSION whenever you deploy changes so users get fresh assets immediately.
-// Old caches with a different version are automatically deleted on activate.
-const VERSION = 'v4';
+// Bump VERSION 
+const VERSION = 'v5';
 const CACHE_NAME = `patricio-bunt-toolkit-${VERSION}`;
 const STATIC_CACHE = `patricio-bunt-toolkit-static-${VERSION}`;
 
