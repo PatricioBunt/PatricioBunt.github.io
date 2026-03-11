@@ -36,23 +36,20 @@ export default {
 
             while (i < src.length) {
                 const c = src[i];
-
-                // Single-line comment
+ 
                 if (c === '/' && peek() === '/') {
                     while (i < src.length && src[i] !== '\n') i++;
                     if (mode === 'beautify') out += '\n' + '    '.repeat(depth);
                     continue;
                 }
-
-                // Multi-line comment
+ 
                 if (c === '/' && peek() === '*') {
                     i += 2;
                     while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i++;
                     i += 2;
                     continue;
                 }
-
-                // String literals (single/double quote)
+ 
                 if (c === '"' || c === "'") {
                     const q = c;
                     let str = q;
@@ -67,8 +64,7 @@ export default {
                     lastNonWs = q;
                     continue;
                 }
-
-                // Template literals
+ 
                 if (c === '`') {
                     let str = '`';
                     i++;
@@ -82,21 +78,18 @@ export default {
                     lastNonWs = '`';
                     continue;
                 }
-
-                // Whitespace
+ 
                 if (/[\s\r\n]/.test(c)) {
                     const ahead = src.slice(i).match(/^[\s\r\n]*/)[0];
                     const hasNewline = /\n/.test(ahead);
                     i += ahead.length;
                     const nextC = src[i] ?? '';
 
-                    if (mode === 'minify') {
-                        // Keep a single space only when needed to separate identifiers
+                    if (mode === 'minify') { 
                         if (/\w/.test(lastNonWs) && /[\w$]/.test(nextC)) {
                             out += ' ';
                         }
-                    } else {
-                        // beautify: preserve logical line breaks
+                    } else { 
                         if (hasNewline && out.length > 0 && !out.endsWith('\n') && !out.endsWith('{\n')) {
                             out += '\n' + '    '.repeat(depth);
                         } else if (!out.endsWith(' ') && !out.endsWith('\n')) {

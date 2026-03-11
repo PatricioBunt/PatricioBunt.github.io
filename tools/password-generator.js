@@ -60,9 +60,7 @@ export default {
                 return;
             }
             
-            let password = '';
-            // Rejection sampling: discard bytes that would introduce modulo bias.
-            // Keeps only bytes in the largest multiple of charset.length that fits in 0–255.
+            let password = ''; 
             const maxUnbiased = Math.floor(256 / charset.length) * charset.length;
             while (password.length < length) {
                 const batch = new Uint8Array(Math.ceil((length - password.length) * 1.5));

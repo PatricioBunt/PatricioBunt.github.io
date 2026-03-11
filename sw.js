@@ -1,5 +1,5 @@
 // Bump VERSION 
-const VERSION = 'v5';
+const VERSION = 'v0.1.0';
 const CACHE_NAME = `patricio-bunt-toolkit-${VERSION}`;
 const STATIC_CACHE = `patricio-bunt-toolkit-static-${VERSION}`;
 
